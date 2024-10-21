@@ -9,6 +9,7 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import app_logo from "../assets/images/rmu-logo.png";
+import Link from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/", current: false },
@@ -84,7 +85,7 @@ export default function Navbar() {
               >
                 <MenuItem>
                   <a
-                    href="#"
+                    href="/account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Profile
@@ -92,7 +93,7 @@ export default function Navbar() {
                 </MenuItem>
                 <MenuItem>
                   <a
-                    href="#"
+                    href="/account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Settings
@@ -100,7 +101,7 @@ export default function Navbar() {
                 </MenuItem>
                 <MenuItem>
                   <a
-                    href="#"
+                    href="/account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Ratings
