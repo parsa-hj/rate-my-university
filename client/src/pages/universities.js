@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/navbar";
 import mizzou from "../assets/images/mizzou.png"; // Use placeholder if image URLs are not available in API response
 import { Link } from "react-router-dom";
+import Footer from "../components/footer";
 
 function Universities() {
   const [universities, setUniversities] = useState([]); // State to store fetched university data
@@ -56,6 +57,8 @@ function Universities() {
           <p>Loading universities...</p>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }
