@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 
-// Stars Component takes number (initial rating) and id as props
-function Stars({ number, id }) {
+// Stars Component takes number (initial rating) and onChange as props
+function Stars({ number, onChange }) {
   // Set the initial state to the value of the number prop
   const [rating, setRating] = useState(number);
 
   // Function to handle click on stars
   const handleRating = (index) => {
     setRating(index);
+    onChange(index); // Call the onChange function passed from the parent component
   };
 
   // Create an array for 5 stars
@@ -20,7 +21,7 @@ function Stars({ number, id }) {
           <input
             type="checkbox"
             className="hidden"
-            onClick={() => handleRating(star)}
+            onClick={() => handleRating(star)} // Update rating on click
           />
           <Star filled={index + 1 <= rating} />
         </label>
@@ -29,13 +30,13 @@ function Stars({ number, id }) {
   );
 }
 
-// Star component that takes whether it's filled or not as prop
+// Star component that takes whether it's filled or not as a prop
 function Star({ filled }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className="h-8 w-8"
-      fill={filled ? "orange" : "transparent"}
+      fill={filled ? "orange" : "transparent"} // Fill color for the star
       viewBox="0 0 24 24"
       stroke="orange"
       strokeWidth={1}

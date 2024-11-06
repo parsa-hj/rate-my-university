@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import for navigation
 import Navbar from "../components/navbar.js";
 import Footer from "../components/footer.js";
 import homepageImg from "../assets/images/homepage-img.png";
@@ -11,6 +12,28 @@ import illustration2 from "../assets/images/illustration2.png";
 import illustration3 from "../assets/images/illustration3.png";
 
 function Home() {
+  const [searchQuery, setSearchQuery] = useState(""); // State to store the search input
+  const navigate = useNavigate();
+
+  // Function to handle the search
+  const handleSearch = async () => {
+    try {
+      // Fetch universities based on searchQuery
+      const response = await fetch(
+        `http://localhost:5000/universities?name=${searchQuery}`
+      );
+      const data = await response.json();
+
+      // If a university is found, navigate to the specific university page
+      if (data.length > 0) {
+        navigate(`/university/${data[0].id}`);
+      } else {
+        alert("University not found"); // Handle case if university is not found
+      }
+    } catch (error) {
+      console.error("Error fetching university data:", error);
+    }
+  };
   return (
     <>
       <Navbar />
@@ -39,11 +62,17 @@ function Home() {
             <input
               type="text"
               placeholder="University Name"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} // Update searchQuery on input change
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()} // Trigger search on Enter key
               className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
 
             {/* Search Icon */}
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <div
+              className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
+              onClick={handleSearch} // Trigger search on icon click
+            >
               <MagnifyingGlassIcon
                 className="h-5 w-5 text-gray-400"
                 aria-hidden="true"
