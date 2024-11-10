@@ -5,6 +5,7 @@ This project is a University Rating App built with React and a Node.js/Express b
 ## Technologies Used
 - React.js
 - Express.js
+- Node.js
 - MySQL
 - Tailwind CSS
 
