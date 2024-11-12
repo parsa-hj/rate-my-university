@@ -10,6 +10,7 @@ import {
 import illustration1 from "../assets/images/illustration1.png";
 import illustration2 from "../assets/images/illustration2.png";
 import illustration3 from "../assets/images/illustration3.png";
+import { Link } from "react-router-dom";
 
 function Home() {
   const [searchQuery, setSearchQuery] = useState(""); // State to store the search input
@@ -124,7 +125,7 @@ function Home() {
         {" "}
         {/* Added flex and justify-center to center the button */}
         <button className="bg-[#3256E5] text-lg text-white font-bold py-4 px-8 py-2 px-4 rounded-lg hover:bg-[#2745B5] transition duration-300">
-          My Ratings
+          <Link to="/account">My Ratings</Link>
         </button>
       </div>
       <Footer />

@@ -61,14 +61,15 @@ function University() {
 
     if (ratings.length > 0) {
       ratings.forEach((rating) => {
-        averages.StudentLife += rating.StudentLife || 0;
-        averages.Cost += rating.Cost || 0;
-        averages.DiningFood += rating.DiningFood || 0;
-        averages.DormsHousing += rating.DormsHousing || 0;
-        averages.ClassesTeachers += rating.ClassesTeachers || 0;
-        averages.ReturnOnInvestment += rating.ReturnOnInvestment || 0;
-        averages.HealthSafety += rating.HealthSafety || 0;
-        averages.CitySetting += rating.CitySetting || 0;
+        averages.StudentLife += parseFloat(rating.StudentLife) || 0;
+        averages.Cost += parseFloat(rating.Cost) || 0;
+        averages.DiningFood += parseFloat(rating.DiningFood) || 0;
+        averages.DormsHousing += parseFloat(rating.DormsHousing) || 0;
+        averages.ClassesTeachers += parseFloat(rating.ClassesTeachers) || 0;
+        averages.ReturnOnInvestment +=
+          parseFloat(rating.ReturnOnInvestment) || 0;
+        averages.HealthSafety += parseFloat(rating.HealthSafety) || 0;
+        averages.CitySetting += parseFloat(rating.CitySetting) || 0;
       });
 
       const totalRatings = ratings.length;
