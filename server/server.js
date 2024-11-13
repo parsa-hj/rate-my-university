@@ -24,8 +24,14 @@ app.get("/", (req, res) => {
 });
 
 app.get("/universities", (req, res) => {
-  const q = "SELECT * FROM universities";
-  db.query(q, (err, data) => {
+  const { name } = req.query;
+  let q = "SELECT * FROM universities";
+
+  if (name) {
+    q += " WHERE name LIKE ?";
+  }
+
+  db.query(q, [`%${name}%`], (err, data) => {
     if (err) return res.json(err);
     return res.json(data);
   });

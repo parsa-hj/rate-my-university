@@ -19,17 +19,17 @@ function Home() {
   // Function to handle the search
   const handleSearch = async () => {
     try {
-      // Fetch universities based on searchQuery
       const response = await fetch(
-        `http://localhost:5000/universities?name=${searchQuery}`
+        `http://localhost:5000/universities?name=${encodeURIComponent(
+          searchQuery
+        )}`
       );
       const data = await response.json();
 
-      // If a university is found, navigate to the specific university page
       if (data.length > 0) {
-        navigate(`/university/${data[0].id}`);
+        navigate(`/university/${data[0].UniversityID}`);
       } else {
-        alert("University not found"); // Handle case if university is not found
+        alert("University not found");
       }
     } catch (error) {
       console.error("Error fetching university data:", error);
