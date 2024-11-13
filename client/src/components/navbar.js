@@ -13,9 +13,9 @@ import Link from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/", current: false },
-  { name: "About", href: "/about", current: false },
-  { name: "Rankings", href: "/rankings", current: false },
   { name: "Universities", href: "/universities", current: false },
+  { name: "Rankings", href: "/rankings", current: false },
+  { name: "About", href: "/about", current: false },
 ];
 
 function classNames(...classes) {

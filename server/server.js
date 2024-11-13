@@ -113,6 +113,19 @@ app.get("/universities/:id/ratings", async (req, res) => {
   }
 });
 
+app.get("/students/:id/ratings", async (req, res) => {
+  const studentId = req.params.id;
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM Rating WHERE StudentID = ?", [studentId]);
+    res.json(rows); // Send back only ratings related to this university
+  } catch (error) {
+    console.error("Error fetching ratings:", error);
+    res.status(500).json({ error: "Failed to fetch ratings" });
+  }
+});
+
 app.listen(port, () => {
   console.log("Connect to backend.");
 });

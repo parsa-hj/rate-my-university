@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 import Navbar from "../components/navbar";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 function Account() {
   // State to manage the currently active tab
@@ -167,11 +166,109 @@ const SettingsContent = ({ data }) => (
   </div>
 );
 
-const RatingsContent = () => (
-  <div>
-    <h2 className="text-2xl font-semibold">My Ratings</h2>
-    <p>Your ratings and reviews will be displayed here.</p>
-  </div>
-);
+const RatingsContent = () => {
+  // State to store ratings and universities data
+  const [ratings, setRatings] = useState([]);
+  const [universities, setUniversities] = useState([]);
+
+  // Fetch ratings and universities when component mounts
+  useEffect(() => {
+    fetchRatings();
+    fetchUniversities();
+  }, []);
+
+  // Function to fetch ratings data
+  const fetchRatings = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/students/2778866/ratings"
+      ); // Assuming a generic ratings endpoint
+      const data = await response.json();
+      setRatings(data);
+    } catch (error) {
+      console.error("Error fetching ratings:", error);
+    }
+  };
+
+  // Function to fetch universities data
+  const fetchUniversities = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/universities");
+      const data = await response.json();
+      setUniversities(data);
+    } catch (error) {
+      console.error("Error fetching universities:", error);
+    }
+  };
+
+  // Function to get the university name based on UniversityID
+  const getUniversityName = (universityId) => {
+    const university = universities.find(
+      (uni) => uni.UniversityID === universityId
+    );
+    return university ? university.name : "Unknown University";
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-semibold mb-4">My Ratings</h2>
+      {ratings.length > 0 ? (
+        <div className="space-y-4">
+          {ratings.map((rating) => (
+            <div
+              key={rating.RatingID}
+              className="p-4 bg-white rounded-lg shadow-md"
+            >
+              <div className="flex justify-between">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-700">
+                    University:
+                  </h3>
+                  <p className="text-gray-900 font-semibold">
+                    {getUniversityName(rating.UniversityID)}
+                  </p>
+                </div>
+              </div>
+              {/* Additional rating fields */}
+              <div className="mt-2">
+                <p>
+                  <strong>Student Life:</strong> {rating.StudentLife}
+                </p>
+                <p>
+                  <strong>Classes & Teachers:</strong> {rating.ClassesTeachers}
+                </p>
+                <p>
+                  <strong>Cost:</strong> {rating.Cost}
+                </p>
+                <p>
+                  <strong>Return on Investment:</strong>{" "}
+                  {rating.ReturnOnInvestment}
+                </p>
+                <p>
+                  <strong>Dining & Food:</strong> {rating.DiningFood}
+                </p>
+                <p>
+                  <strong>Dorms & Housing:</strong> {rating.DormsHousing}
+                </p>
+                <p>
+                  <strong>Health & Safety:</strong> {rating.HealthSafety}
+                </p>
+                <p>
+                  <strong>City Setting:</strong> {rating.CitySetting}
+                </p>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-700">Rating:</h3>
+                  <p className="text-gray-900">{rating.RatingComment}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p>No ratings available.</p>
+      )}
+    </div>
+  );
+};
 
 export default Account;
