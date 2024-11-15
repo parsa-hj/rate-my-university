@@ -45,6 +45,17 @@ app.get("/universities", (req, res) => {
   });
 });
 
+app.get("/*", function (req, res) {
+  res.sendFile(
+    path.join(__dirname, "../client/build/index.html"),
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      }
+    }
+  );
+});
+
 app.get("/students", (req, res) => {
   const q = "SELECT * FROM students";
   db.query(q, (err, data) => {

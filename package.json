@@ -1,0 +1,21 @@
+{
+  "name": "rate-my-university",
+  "version": "1.0.0",
+  "description": "This project is a University Rating App built with React and a Node.js/Express backend, allowing users to browse and rate universities on various categories like student life, cost, dorms, classes, and more. Users can submit ratings on a 0-5 scale and leave comments, with the average scores dynamically calculated and displayed for each category. The app fetches university details and user ratings from the backend API, providing a streamlined way for students to research universities based on peer feedback.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd server && node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.11.4",
+    "nodemon": "^3.1.7"
+  }
+}
