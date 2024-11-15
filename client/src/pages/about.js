@@ -10,7 +10,7 @@ function About() {
         <div className="max-w-2xl text-center mt-20">
           <h1 className="text-3xl font-bold mb-6">About Rate My University</h1>
           <p className="text-lg text-gray-700">
-            The project aims to build an application called{" "}
+            The project aims to build an application called
             <strong>Rate My University</strong>, where students can rate and
             review their universities based on various categories such as
             academic quality, campus facilities, social life, etc. Unlike
