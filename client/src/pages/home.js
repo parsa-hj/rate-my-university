@@ -20,14 +20,14 @@ function Home() {
   const handleSearch = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/universities?name=${encodeURIComponent(
-          searchQuery
-        )}`
+        `${
+          process.env.REACT_APP_API_BASE_URL
+        }/universities?name=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
 
       if (data.length > 0) {
-        navigate(`/university/${data[0].UniversityID}`);
+        navigate(`/university-client/${data[0].UniversityID}`);
       } else {
         alert("University not found");
       }

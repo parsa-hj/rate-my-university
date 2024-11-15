@@ -17,7 +17,9 @@ function Account() {
   const fetchData = async () => {
     try {
       // Make a GET request using the Fetch API
-      const response = await fetch("http://localhost:5000/students");
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/students`
+      );
 
       // Check if the response is successful (status code 200-299)
       if (!response.ok) {

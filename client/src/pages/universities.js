@@ -11,7 +11,9 @@ function Universities() {
     // Fetch data from the backend when the component mounts
     const fetchUniversities = async () => {
       try {
-        const response = await fetch("http://localhost:5000/universities");
+        const response = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/universities`
+        );
         const data = await response.json();
         setUniversities(data); // Set the fetched data into the state
       } catch (error) {
@@ -43,12 +45,14 @@ function Universities() {
               <p className="text-gray-500 mb-4">{university.location}</p>
               <div className="flex space-x-4">
                 <button className="bg-[#3256E5] text-white py-2 px-4 rounded-md">
-                  <Link to={`/university/${university.UniversityID}`}>
+                  <Link to={`/university-client/${university.UniversityID}`}>
                     View
                   </Link>
                 </button>
                 <button className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md">
-                  <Link to={`/rating/${university.UniversityID}`}>Rating</Link>
+                  <Link to={`/rating-client/${university.UniversityID}`}>
+                    Rating
+                  </Link>
                 </button>
               </div>
             </div>

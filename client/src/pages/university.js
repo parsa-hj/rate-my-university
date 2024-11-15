@@ -13,7 +13,7 @@ function University() {
     const fetchUniversityData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/universities/${id}`
+          `${process.env.REACT_APP_API_BASE_URL}/universities/${id}`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -33,7 +33,7 @@ function University() {
     const fetchRatings = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/universities/${id}/ratings`
+          `${process.env.REACT_APP_API_BASE_URL}/universities/${id}/ratings`
         );
         const data = await response.json();
         console.log(data);

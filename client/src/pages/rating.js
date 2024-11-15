@@ -25,7 +25,7 @@ function Rating() {
     const fetchUniversity = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/universities/${id}`
+          `${process.env.REACT_APP_API_BASE_URL}/universities/${id}`
         );
         const data = await response.json();
         setUniversity(data); // Update state with fetched data
@@ -62,13 +62,16 @@ function Rating() {
     setLoading(true); // Set loading state
 
     try {
-      const response = await fetch("http://localhost:5000/ratings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ratingData),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/ratings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(ratingData),
+        }
+      );
 
       if (response.ok) {
         alert("Rating submitted successfully");
