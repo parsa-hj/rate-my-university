@@ -16,9 +16,9 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/account" element={<Account />} />
         <Route path="/rankings" element={<Rankings />} />
-        <Route path="/university/:id" element={<University />} />
-        <Route path="/universities" element={<Universities />} />
-        <Route path="/rating/:id" element={<Rating />} />
+        <Route path="/university-client/:id" element={<University />} />
+        <Route path="/universities-client" element={<Universities />} />
+        <Route path="/rating-client/:id" element={<Rating />} />
       </Routes>
     </BrowserRouter>
   );
