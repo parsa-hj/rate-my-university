@@ -12,20 +12,18 @@ app.use(express.json());
 
 const port = process.env.PORT || 5000; // Uses Heroku's port or 5000 for local
 
-let connection;
+// Create database connection, assigning to a single variable `db`
+const db = process.env.JAWSDB_URL
+  ? mysql.createConnection(process.env.JAWSDB_URL)
+  : mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      port: process.env.DB_PORT || 3306,
+    });
 
-if (process.env.JAWSDB_URL) {
-  connection = mysql.createConnection(process.env.JAWSDB_URL);
-} else {
-  const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-  });
-}
-
+// Connect to the database if db is defined
 db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err);
@@ -95,7 +93,6 @@ app.post("/ratings", async (req, res) => {
   } = req.body;
 
   try {
-    // Use promise-based API with mysql2
     const [result] = await db.promise().query(
       `INSERT INTO Rating 
         (UniversityID, StudentID, RatingComment, StudentLife, ClassesTeachers, Cost, ReturnOnInvestment, DiningFood, DormsHousing, HealthSafety, CitySetting)
@@ -115,7 +112,6 @@ app.post("/ratings", async (req, res) => {
       ]
     );
 
-    // Respond with success and the new rating ID
     res.status(201).json({
       message: "Rating added successfully",
       ratingID: result.insertId,
@@ -132,35 +128,13 @@ app.get("/universities/:id/ratings", async (req, res) => {
     const [rows] = await db
       .promise()
       .query("SELECT * FROM Rating WHERE UniversityID = ?", [universityId]);
-    res.json(rows); // Send back only ratings related to this university
+    res.json(rows);
   } catch (error) {
-    console.error("Error fetching ratings:", error);
-    res.status(500).json({ error: "Failed to fetch ratings" });
+    console.error("Error retrieving ratings:", error);
+    res.status(500).json({ error: "Failed to retrieve ratings" });
   }
 });
-
-app.get("/students/:id/ratings", async (req, res) => {
-  const studentId = req.params.id;
-  try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM Rating WHERE StudentID = ?", [studentId]);
-    res.json(rows); // Send back only ratings related to this university
-  } catch (error) {
-    console.error("Error fetching ratings:", error);
-    res.status(500).json({ error: "Failed to fetch ratings" });
-  }
-});
-
-// Serves React frontend in production
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/build")));
-
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
-  });
-}
 
 app.listen(port, () => {
-  console.log("Connect to backend.");
+  console.log(`Server is running on port ${port}`);
 });
