@@ -122,7 +122,6 @@ function Home() {
       </div>
 
       <div className="mt-20 flex justify-center">
-        {" "}
         {/* Added flex and justify-center to center the button */}
         <button className="bg-[#3256E5] text-lg text-white font-bold py-4 px-8 py-2 px-4 rounded-lg hover:bg-[#2745B5] transition duration-300">
           <Link to="/account">My Ratings</Link>
