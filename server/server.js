@@ -19,6 +19,14 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+db.connect((err) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+    return;
+  }
+  console.log("Connected to MySQL database.");
+});
+
 app.get("/", (req, res) => {
   res.send("Welcome to Rate My University API");
 });
