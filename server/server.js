@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use(express.json());
 
-const port = 5000;
+const port = process.env.PORT || 5000; // Uses Heroku's port or 5000 for local
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -133,6 +133,15 @@ app.get("/students/:id/ratings", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch ratings" });
   }
 });
+
+// Serves React frontend in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../client/build")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  });
+}
 
 app.listen(port, () => {
   console.log("Connect to backend.");
