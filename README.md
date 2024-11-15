@@ -49,6 +49,7 @@ The client should now be running on http://localhost:3000.
 2. **Install Dependencies**
    ```bash
    npm install
+   npm install -g nodemon
 
 3. **Start the Server**
    ```bash
