@@ -13,6 +13,7 @@ function University() {
   const [ratings, setRatings] = useState([]); // State to store ratings
   const [confirmationVisible, setConfirmationVisible] = useState(false); // State to show confirmation dialog
   const [commentToDelete, setCommentToDelete] = useState(null); // State to store the comment ID to be deleted
+  const [facilities, setFacilities] = useState([]); // State to store facilities
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -50,6 +51,25 @@ function University() {
 
     fetchRatings();
   }, [id]);
+
+  // Fetch facilities data when the component mounts
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/facilities");
+        const data = await response.json();
+        // Filter facilities for the current university
+        const universityFacilities = data.filter(
+          (facility) => facility.UniversityID === parseInt(id)
+        );
+        setFacilities(universityFacilities);
+      } catch (error) {
+        console.error("Error fetching facilities:", error);
+      }
+    };
+
+    fetchFacilities();
+  }, [id]); // Fetch facilities when the university ID changes
 
   // Function to calculate average ratings
   const calculateAverageRatings = () => {
@@ -183,6 +203,35 @@ function University() {
         {university.name}
       </h1>
       <RatingsDisplay averageRatings={averageRatings} />
+
+      {/* Popular Facilities Section */}
+      <div className=" justify-around items-start mt-20 px-4 ml-64 mr-72">
+        <div className="space-y-4">
+          <span className="mr-2 text-2xl">Popular Facilities:</span>
+          {facilities.length > 0 ? (
+            <div className="space-y-4">
+              {facilities.map((facility) => (
+                <div
+                  key={facility.FacilityID}
+                  className="flex items-start p-3 border rounded-lg shadow-sm bg-white"
+                >
+                  <span className="font-semibold text-lg text-[#3256E5] mr-2">
+                    {facility.FacilityName}:
+                  </span>
+                  <span className="text-lg text-gray-700">
+                    {facility.FDescription || "Description not available"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-lg">
+              No facilities available for this university.
+            </p>
+          )}
+        </div>
+      </div>
+
       <CommentsSection ratings={ratings} onDelete={handleDelete} />
 
       {confirmationVisible && (

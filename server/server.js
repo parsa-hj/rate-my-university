@@ -61,6 +61,14 @@ app.get("/avgscores", (req, res) => {
   });
 });
 
+app.get("/facilities", (req, res) => {
+  const q = "SELECT * FROM universityfacilities";
+  db.query(q, (err, data) => {
+    if (err) return res.json(err);
+    return res.json(data);
+  });
+});
+
 app.get("/universities/:id", (req, res) => {
   const q = "SELECT * FROM universities WHERE UniversityID = ?";
   db.query(q, [req.params.id], (err, data) => {

@@ -113,6 +113,13 @@ const ProfileContent = ({ data }) => {
           {/* fetched data */}
         </div>
         <div>
+          <span className="block text-lg font-medium text-gray-700">Age:</span>
+          <span className="block text-lg text-gray-900">
+            {data && data.age}
+          </span>
+          {/* fetched data */}
+        </div>
+        <div>
           <span className="block text-lg font-medium text-gray-700">
             School:
           </span>
