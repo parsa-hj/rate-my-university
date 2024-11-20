@@ -48,7 +48,7 @@ function Universities() {
                   </Link>
                 </button>
                 <button className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md">
-                  <Link to={`/rating/${university.UniversityID}`}>Rating</Link>
+                  <Link to={`/rating/${university.UniversityID}`}>Rate</Link>
                 </button>
               </div>
             </div>

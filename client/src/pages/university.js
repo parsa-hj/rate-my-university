@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Import useParams
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { Link } from "react-router-dom";
 
 function University() {
   const { id } = useParams(); // Get the university ID from the URL
@@ -171,6 +172,15 @@ function University() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Rate Button */}
+      <div className="flex justify-center mt-10">
+        <Link to={`/rating/${university.UniversityID}`}>
+          <button className="text-white py-2 px-4 rounded-md bg-[#3256E5]">
+            Rate this University
+          </button>
+        </Link>
       </div>
       <Footer />
     </div>
