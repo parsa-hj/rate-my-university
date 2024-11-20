@@ -3,11 +3,14 @@ import { useParams } from "react-router-dom"; // Import useParams
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { Link } from "react-router-dom";
+import { TrashIcon } from "@heroicons/react/20/solid"; // Importing the trash icon from Heroicons
 
 function University() {
   const { id } = useParams(); // Get the university ID from the URL
   const [university, setUniversity] = useState(null); // State to store university data
   const [ratings, setRatings] = useState([]); // State to store ratings
+  const [confirmationVisible, setConfirmationVisible] = useState(false); // State to show confirmation dialog
+  const [commentToDelete, setCommentToDelete] = useState(null); // State to store the comment ID to be deleted
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -37,7 +40,6 @@ function University() {
           `http://localhost:5000/universities/${id}/ratings`
         );
         const data = await response.json();
-        console.log(data);
         setRatings(data);
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -78,11 +80,55 @@ function University() {
         averages[key] /= totalRatings; // Calculate the average
       }
     }
-    console.log("Calculated averages:", averages);
     return averages;
   };
 
   const averageRatings = calculateAverageRatings();
+
+  const handleDelete = (ratingID) => {
+    setConfirmationVisible(true); // Show the confirmation dialog
+    setCommentToDelete(ratingID); // Set the comment to delete
+  };
+
+  const confirmDelete = async () => {
+    console.log("Deleting comment with ID:", commentToDelete); // Log for debugging
+
+    try {
+      // Construct the correct DELETE URL
+      const deleteUrl = `http://localhost:5000/ratings/${commentToDelete}`;
+      console.log("Sending DELETE request to:", deleteUrl); // Log the request URL for debugging
+
+      // Make the DELETE request to the backend
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+      });
+
+      console.log("Delete response:", response); // Log the response
+
+      if (response.ok) {
+        console.log("Comment deleted successfully.");
+        // Filter out the deleted rating from the state
+        setRatings(
+          ratings.filter((rating) => rating.RatingID !== commentToDelete)
+        );
+        setConfirmationVisible(false); // Hide the confirmation dialog
+        setCommentToDelete(null); // Clear the selected rating to delete
+      } else {
+        const error = await response.json();
+        console.error(
+          "Failed to delete comment:",
+          error.message || response.status
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setConfirmationVisible(false); // Hide the confirmation dialog without deleting
+    setCommentToDelete(null); // Clear the selected rating to delete
+  };
 
   if (!university) {
     return <div>Loading...</div>; // Show loading state
@@ -164,8 +210,16 @@ function University() {
             {ratings.map((rating, index) => (
               <div
                 key={index}
-                className="border p-4 rounded-md shadow-md mr-20"
+                className="border p-4 rounded-md shadow-md mr-20 relative"
               >
+                {/* Delete button positioned on the top right */}
+                <button
+                  onClick={() => handleDelete(rating.RatingID)}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                >
+                  <TrashIcon className="h-6 w-6" />
+                </button>
+
                 <p className="text-lg font-medium">Comment:</p>
                 <p className="text-gray-700">{rating.RatingComment}</p>
               </div>
@@ -173,6 +227,31 @@ function University() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {confirmationVisible && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-md text-center">
+            <h3 className="text-lg font-semibold mb-4">
+              Are you sure you want to delete this comment?
+            </h3>
+            <div className="space-x-4">
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-md"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-300 text-black rounded-md"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Rate Button */}
       <div className="flex justify-center mt-10">

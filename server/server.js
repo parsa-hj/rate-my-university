@@ -69,6 +69,26 @@ app.get("/universities/:id", (req, res) => {
   });
 });
 
+app.get("/ratings/:id", (req, res) => {
+  const q = "SELECT * FROM rating WHERE RatingID = ?";
+  db.query(q, [req.params.id], (err, data) => {
+    if (err) return res.json(err);
+    return res.json(data[0]); // Return the first result (the university)
+  });
+});
+
+app.delete("/ratings/:id", (req, res) => {
+  const q = "DELETE FROM rating WHERE RatingID = ?";
+  db.query(q, [req.params.id], (err, data) => {
+    if (err) return res.json(err); // Handle any errors
+    if (data.affectedRows > 0) {
+      return res.json({ message: "Rating deleted successfully" });
+    } else {
+      return res.status(404).json({ message: "Rating not found" });
+    }
+  });
+});
+
 app.post("/ratings", async (req, res) => {
   const {
     UniversityID,
