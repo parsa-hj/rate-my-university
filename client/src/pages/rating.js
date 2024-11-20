@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Stars from "../components/starts";
@@ -8,6 +8,7 @@ function Rating() {
   const { id } = useParams(); // Get the university ID from the URL
   const [university, setUniversity] = useState(null); // Store university data
   const [loading, setLoading] = useState(false); // Loading state for submission
+  const navigate = useNavigate();
 
   // Define state variables for ratings and comment
   const [studentLifeScore, setStudentLifeScore] = useState(0);
@@ -74,6 +75,7 @@ function Rating() {
         alert("Rating submitted successfully");
         // Optionally reset the form here
         resetForm();
+        navigate(`/universities`);
       } else {
         const errorText = await response.text(); // Get error message from server
         console.error("Error response:", errorText);

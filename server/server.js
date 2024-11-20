@@ -189,6 +189,52 @@ app.post("/ratings", async (req, res) => {
   }
 });
 
+// Example Express route for updating the category table
+app.put("/categories/:universityID", async (req, res) => {
+  const { universityID } = req.params;
+  const {
+    avgStudentLife,
+    avgCost,
+    avgDiningFood,
+    avgDormsHousing,
+    avgClassesTeachers,
+    avgReturnOnInvestment,
+    avgHealthSafety,
+    avgCitySetting,
+  } = req.body;
+
+  try {
+    const result = await db.query(
+      `UPDATE category SET
+        avgStudentLife = $1,
+        avgCost = $2,
+        avgDiningFood = $3,
+        avgDormsHousing = $4,
+        avgClassesTeachers = $5,
+        avgReturnOnInvestment = $6,
+        avgHealthSafety = $7,
+        avgCitySetting = $8
+      WHERE UniversityID = $9`,
+      [
+        avgStudentLife,
+        avgCost,
+        avgDiningFood,
+        avgDormsHousing,
+        avgClassesTeachers,
+        avgReturnOnInvestment,
+        avgHealthSafety,
+        avgCitySetting,
+        universityID,
+      ]
+    );
+
+    res.status(200).send({ message: "Category updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Error updating category" });
+  }
+});
+
 app.get("/universities/:id/averages", async (req, res) => {
   const universityId = req.params.id; // Get the university ID from the URL params
   try {

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Import useParams
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import CommentsSection from "../components/CommentsSection";
+import RatingsDisplay from "../components/RatingsDisplay";
 import { Link } from "react-router-dom";
-import { TrashIcon } from "@heroicons/react/20/solid"; // Importing the trash icon from Heroicons
 
 function University() {
   const { id } = useParams(); // Get the university ID from the URL
@@ -113,6 +115,7 @@ function University() {
         );
         setConfirmationVisible(false); // Hide the confirmation dialog
         setCommentToDelete(null); // Clear the selected rating to delete
+        updateCategoryTable(); // Recalculate and update category table
       } else {
         const error = await response.json();
         console.error(
@@ -130,6 +133,40 @@ function University() {
     setCommentToDelete(null); // Clear the selected rating to delete
   };
 
+  // Update the category table with the new average values
+  const updateCategoryTable = async () => {
+    const averages = calculateAverageRatings();
+
+    try {
+      const updateUrl = `http://localhost:5000/categories/${id}`; // Assuming UniversityID is the same as the 'id' for the university
+      const response = await fetch(updateUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          avgStudentLife: averages.StudentLife,
+          avgCost: averages.Cost,
+          avgDiningFood: averages.DiningFood,
+          avgDormsHousing: averages.DormsHousing,
+          avgClassesTeachers: averages.ClassesTeachers,
+          avgReturnOnInvestment: averages.ReturnOnInvestment,
+          avgHealthSafety: averages.HealthSafety,
+          avgCitySetting: averages.CitySetting,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Category table updated successfully.");
+      } else {
+        const error = await response.json();
+        console.error("Failed to update category table:", error.message);
+      }
+    } catch (error) {
+      console.error("Error updating category table:", error);
+    }
+  };
+
   if (!university) {
     return <div>Loading...</div>; // Show loading state
   }
@@ -145,112 +182,11 @@ function University() {
       <h1 className="text-3xl font-bold text-center mb-6 mt-10">
         {university.name}
       </h1>
-      <div className="flex justify-around mb-6">
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Student Life:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.StudentLife.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Cost:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.Cost.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Dining and Food:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.DiningFood.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Dorms and Housing:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.DormsHousing.toFixed(1)}
-            </span>
-          </div>
-        </div>
+      <RatingsDisplay averageRatings={averageRatings} />
+      <CommentsSection ratings={ratings} onDelete={handleDelete} />
 
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Classes and Teachers:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.ClassesTeachers.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Return on Investment:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.ReturnOnInvestment.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Health and Safety:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.HealthSafety.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">City Setting:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.CitySetting.toFixed(1)}
-            </span>
-          </div>
-        </div>
-      </div>
-      {/* Display Comments */}
-      <div className="mt-20 ml-40">
-        <h2 className="text-2xl font-bold mb-4">Comments</h2>
-        {ratings.length === 0 ? (
-          <p>No comments yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {ratings.map((rating, index) => (
-              <div
-                key={index}
-                className="border p-4 rounded-md shadow-md mr-20 relative"
-              >
-                {/* Delete button positioned on the top right */}
-                <button
-                  onClick={() => handleDelete(rating.RatingID)}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                >
-                  <TrashIcon className="h-6 w-6" />
-                </button>
-
-                <p className="text-lg font-medium">Comment:</p>
-                <p className="text-gray-700">{rating.RatingComment}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Confirmation Dialog */}
       {confirmationVisible && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <h3 className="text-lg font-semibold mb-4">
-              Are you sure you want to delete this comment?
-            </h3>
-            <div className="space-x-4">
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-500 text-white rounded-md"
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={cancelDelete}
-                className="px-4 py-2 bg-gray-300 text-black rounded-md"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationDialog onConfirm={confirmDelete} onCancel={cancelDelete} />
       )}
 
       {/* Rate Button */}

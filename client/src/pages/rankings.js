@@ -74,7 +74,6 @@ function Rankings() {
         />
       </div>
 
-      <h1 className="text-2xl font-bold mt-12 ml-20">Results</h1>
       <div className="flex justify-center p-6 flex-wrap space-y-6">
         {sortedUniversities.length > 0 ? (
           sortedUniversities.map((university) => (
