@@ -27,7 +27,7 @@ db.connect((err) => {
   console.log("Connected to MySQL database.");
 });
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Welcome to Rate My University API");
 });
 

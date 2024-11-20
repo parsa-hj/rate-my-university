@@ -105,12 +105,14 @@ function Rankings() {
                 </p>
                 <div className="flex space-x-4 mt-4">
                   <button className="bg-[#3256E5] text-white py-2 px-4 rounded-md">
-                    <Link to={`/university/${university.UniversityID}`}>
+                    <Link to={`/client-university/${university.UniversityID}`}>
                       View
                     </Link>
                   </button>
                   <button className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md">
-                    <Link to={`/rating/${university.UniversityID}`}>Rate</Link>
+                    <Link to={`/client-rating/${university.UniversityID}`}>
+                      Rate
+                    </Link>
                   </button>
                 </div>
               </div>

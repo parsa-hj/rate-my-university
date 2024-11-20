@@ -75,7 +75,7 @@ function Rating() {
         alert("Rating submitted successfully");
         // Optionally reset the form here
         resetForm();
-        navigate(`/universities`);
+        navigate(`/client-universities`);
       } else {
         const errorText = await response.text(); // Get error message from server
         console.error("Error response:", errorText);

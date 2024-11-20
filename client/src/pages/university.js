@@ -240,7 +240,7 @@ function University() {
 
       {/* Rate Button */}
       <div className="flex justify-center mt-10">
-        <Link to={`/rating/${university.UniversityID}`}>
+        <Link to={`/client-rating/${university.UniversityID}`}>
           <button className="text-white py-2 px-4 rounded-md bg-[#3256E5]">
             Rate this University
           </button>

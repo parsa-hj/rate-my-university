@@ -13,9 +13,9 @@ import Link from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/", current: false },
-  { name: "Universities", href: "/universities", current: false },
-  { name: "Rankings", href: "/rankings", current: false },
-  { name: "About", href: "/about", current: false },
+  { name: "Universities", href: "/client-universities", current: false },
+  { name: "Rankings", href: "/client-rankings", current: false },
+  { name: "About", href: "/client-about", current: false },
 ];
 
 function classNames(...classes) {
@@ -86,7 +86,7 @@ export default function Navbar() {
               >
                 <MenuItem>
                   <a
-                    href="/account"
+                    href="/client-account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Profile
@@ -94,7 +94,7 @@ export default function Navbar() {
                 </MenuItem>
                 <MenuItem>
                   <a
-                    href="/account"
+                    href="/client-account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Settings
@@ -102,7 +102,7 @@ export default function Navbar() {
                 </MenuItem>
                 <MenuItem>
                   <a
-                    href="/account"
+                    href="/client-account"
                     className="block px-4 py-2 text-base text-gray-700 data-[focus]:bg-gray-100"
                   >
                     Ratings

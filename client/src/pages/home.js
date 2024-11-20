@@ -27,7 +27,7 @@ function Home() {
       const data = await response.json();
 
       if (data.length > 0) {
-        navigate(`/university/${data[0].UniversityID}`);
+        navigate(`/client-university/${data[0].UniversityID}`);
       } else {
         alert("University not found");
       }
@@ -125,7 +125,7 @@ function Home() {
         {" "}
         {/* Added flex and justify-center to center the button */}
         <button className="bg-[#3256E5] text-lg text-white font-bold py-4 px-8 py-2 px-4 rounded-lg hover:bg-[#2745B5] transition duration-300">
-          <Link to="/account">My Ratings</Link>
+          <Link to="/client-account">My Ratings</Link>
         </button>
       </div>
       <Footer />
