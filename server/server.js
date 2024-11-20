@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use(express.json());
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -303,5 +303,5 @@ app.get("/students/:id/ratings", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log("Connect to backend.");
+  console.log(`Server is running on port ${port}`);
 });

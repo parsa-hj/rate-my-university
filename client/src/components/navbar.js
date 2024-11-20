@@ -9,7 +9,6 @@ import {
 } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import app_logo from "../assets/images/rmu-logo.png";
-import Link from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/", current: false },

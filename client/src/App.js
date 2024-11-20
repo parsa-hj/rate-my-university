@@ -7,6 +7,8 @@ import University from "./pages/university.js";
 import Universities from "./pages/universities.js";
 import Rating from "./pages/rating.js";
 import Rankings from "./pages/rankings.js";
+import Login from "./pages/login.js";
+import SignUp from "./pages/signup.js";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path="/client-university/:id" element={<University />} />
         <Route path="/client-universities" element={<Universities />} />
         <Route path="/client-rating/:id" element={<Rating />} />
+        <Route path="/client-login" element={<Login />} />
+        <Route path="/client-signup" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   );
