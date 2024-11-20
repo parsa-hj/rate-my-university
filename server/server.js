@@ -77,7 +77,7 @@ app.post("/ratings", async (req, res) => {
   } = req.body;
 
   try {
-    // Use promise-based API with mysql2
+    // Insert the new rating into the Rating table
     const [result] = await db.promise().query(
       `INSERT INTO Rating 
         (UniversityID, StudentID, RatingComment, StudentLife, ClassesTeachers, Cost, ReturnOnInvestment, DiningFood, DormsHousing, HealthSafety, CitySetting)
@@ -97,14 +97,100 @@ app.post("/ratings", async (req, res) => {
       ]
     );
 
+    // Calculate new averages for the university
+    const [averages] = await db.promise().query(
+      `SELECT 
+         AVG(StudentLife) AS AvgStudentLife,
+         AVG(ClassesTeachers) AS AvgClassesTeachers,
+         AVG(Cost) AS AvgCost,
+         AVG(ReturnOnInvestment) AS AvgReturnOnInvestment,
+         AVG(DiningFood) AS AvgDiningFood,
+         AVG(DormsHousing) AS AvgDormsHousing,
+         AVG(HealthSafety) AS AvgHealthSafety,
+         AVG(CitySetting) AS AvgCitySetting
+       FROM Rating
+       WHERE UniversityID = ?`,
+      [UniversityID]
+    );
+
+    // Update the category table with the new averages
+    const {
+      AvgStudentLife,
+      AvgClassesTeachers,
+      AvgCost,
+      AvgReturnOnInvestment,
+      AvgDiningFood,
+      AvgDormsHousing,
+      AvgHealthSafety,
+      AvgCitySetting,
+    } = averages[0]; // The result of the averages query
+
+    await db.promise().query(
+      `UPDATE category
+       SET 
+         AvgStudentLife = ?,
+         AvgClassesTeachers = ?,
+         AvgCost = ?,
+         AvgReturnOnInvestment = ?,
+         AvgDiningFood = ?,
+         AvgDormsHousing = ?,
+         AvgHealthSafety = ?,
+         AvgCitySetting = ?
+       WHERE UniversityID = ?`,
+      [
+        AvgStudentLife,
+        AvgClassesTeachers,
+        AvgCost,
+        AvgReturnOnInvestment,
+        AvgDiningFood,
+        AvgDormsHousing,
+        AvgHealthSafety,
+        AvgCitySetting,
+        UniversityID,
+      ]
+    );
+
     // Respond with success and the new rating ID
     res.status(201).json({
-      message: "Rating added successfully",
+      message: "Rating added successfully and averages updated",
       ratingID: result.insertId,
     });
   } catch (error) {
-    console.error("Error inserting rating:", error);
-    res.status(500).json({ error: "Failed to add rating" });
+    console.error("Error inserting rating or updating averages:", error);
+    res.status(500).json({ error: "Failed to add rating or update averages" });
+  }
+});
+
+app.get("/universities/:id/averages", async (req, res) => {
+  const universityId = req.params.id; // Get the university ID from the URL params
+  try {
+    const [rows] = await db.promise().query(
+      `
+      SELECT 
+        category.AvgStudentLife, 
+        category.AvgClassesTeachers, 
+        category.AvgCost, 
+        category.AvgReturnOnInvestment, 
+        category.AvgDiningFood, 
+        category.AvgDormsHousing, 
+        category.AvgHealthSafety, 
+        category.AvgCitySetting
+      FROM category
+      WHERE category.UniversityID = ?
+    `,
+      [universityId]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No averages found for this university" });
+    }
+
+    res.json(rows[0]); // Return the averages for the specific university
+  } catch (error) {
+    console.error("Error fetching university averages:", error);
+    res.status(500).json({ error: "Failed to fetch university averages" });
   }
 });
 
