@@ -197,6 +197,27 @@ app.post("/ratings", async (req, res) => {
   }
 });
 
+app.put("/ratings/:id", (req, res) => {
+  const { RatingComment } = req.body;
+  const ratingID = req.params.id;
+
+  const q = "UPDATE rating SET RatingComment = ? WHERE RatingID = ?";
+  db.query(q, [RatingComment, ratingID], (err, result) => {
+    if (err) {
+      console.error("Error updating rating comment:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to update rating comment" });
+    }
+
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Rating comment updated successfully" });
+    } else {
+      res.status(404).json({ message: "Rating not found" });
+    }
+  });
+});
+
 // Example Express route for updating the category table
 app.put("/categories/:universityID", async (req, res) => {
   const { universityID } = req.params;

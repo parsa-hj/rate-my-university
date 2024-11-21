@@ -187,6 +187,36 @@ function University() {
     }
   };
 
+  const handleEdit = async (ratingID, updatedComment) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/ratings/${ratingID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ RatingComment: updatedComment }),
+        }
+      );
+
+      if (response.ok) {
+        setRatings((prevRatings) =>
+          prevRatings.map((rating) =>
+            rating.RatingID === ratingID
+              ? { ...rating, RatingComment: updatedComment }
+              : rating
+          )
+        );
+        console.log("Comment updated successfully.");
+      } else {
+        console.error("Failed to update comment.");
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+    }
+  };
+
   if (!university) {
     return <div>Loading...</div>; // Show loading state
   }
@@ -232,7 +262,11 @@ function University() {
         </div>
       </div>
 
-      <CommentsSection ratings={ratings} onDelete={handleDelete} />
+      <CommentsSection
+        ratings={ratings}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
 
       {confirmationVisible && (
         <ConfirmationDialog onConfirm={confirmDelete} onCancel={cancelDelete} />
