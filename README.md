@@ -11,7 +11,7 @@ This project is a University Rating App built with React and a Node.js/Express b
 
 ## Prerequisites
 
-Ensure you have **Node.js** installed on your machine to run this application.
+Ensure you have **Node.js (v23.2.0 or above)** installed on your machine to run this application.
 
 ## Installation
 
