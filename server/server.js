@@ -2,6 +2,8 @@ const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
 const path = require("path");
+const { expressjwt: jwt } = require("express-jwt");
+const jwksRsa = require("jwks-rsa");
 require("dotenv").config();
 
 const app = express();
@@ -17,6 +19,22 @@ const db = mysql.createConnection({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+});
+
+const checkJwt = jwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://your-domain.us.auth0.com/.well-known/jwks.json`,
+  }),
+  audience: "your-api-audience",
+  issuer: "https://your-domain.us.auth0.com/",
+  algorithms: ["RS256"],
+});
+
+app.get("/api/protected", checkJwt, (req, res) => {
+  res.send("This is a protected route. You are authenticated!");
 });
 
 db.connect((err) => {
