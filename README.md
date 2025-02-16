@@ -1,6 +1,6 @@
 # Rate My University
 
-This project is a University Rating App built with React and a Node.js/Express backend, allowing users to browse and rate universities on various categories like student life, cost, dorms, classes, and more. Users can submit ratings on a 0-5 scale and leave comments, with the average scores dynamically calculated and displayed for each category. The app fetches university details and user ratings from the backend API, providing a streamlined way for students to research universities based on peer feedback.
+This project is a University Rating App built with React.js, a Node.js/Express backend, and an SQL database allowing users to browse and rate universities on various categories like student life, cost, dorms, classes, and more. Users can submit ratings on a 0-5 scale and leave comments, with the average scores dynamically calculated and displayed for each category. The app fetches university details and user ratings from the backend API, providing a streamlined way for students to research universities based on peer feedback.
 
 ## Technologies Used
 - React.js
