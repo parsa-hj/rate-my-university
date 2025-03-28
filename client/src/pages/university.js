@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // Import useParams
+import { useParams, Link } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import CommentsSection from "../components/CommentsSection";
 import RatingsDisplay from "../components/RatingsDisplay";
-import { Link } from "react-router-dom";
+import { MapPin, Building2, GraduationCap, Star } from "lucide-react";
 
 function University() {
-  const { id } = useParams(); // Get the university ID from the URL
-  const [university, setUniversity] = useState(null); // State to store university data
-  const [ratings, setRatings] = useState([]); // State to store ratings
-  const [confirmationVisible, setConfirmationVisible] = useState(false); // State to show confirmation dialog
-  const [commentToDelete, setCommentToDelete] = useState(null); // State to store the comment ID to be deleted
-  const [facilities, setFacilities] = useState([]); // State to store facilities
+  const { id } = useParams();
+  const [university, setUniversity] = useState(null);
+  const [ratings, setRatings] = useState([]);
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [facilities, setFacilities] = useState([]);
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -218,68 +218,132 @@ function University() {
   };
 
   if (!university) {
-    return <div>Loading...</div>; // Show loading state
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <img
-        src={university.image_url}
-        alt={university.name}
-        className="w-full h-80 object-cover mb-4"
-      />
-      <h1 className="text-3xl font-bold text-center mb-6 mt-10">
-        {university.name}
-      </h1>
-      <RatingsDisplay averageRatings={averageRatings} />
 
-      {/* Popular Facilities Section */}
-      <div className=" justify-around items-start mt-20 px-4 ml-64 mr-72">
-        <div className="space-y-4">
-          <span className="mr-2 text-2xl">Popular Facilities:</span>
-          {facilities.length > 0 ? (
-            <div className="space-y-4">
-              {facilities.map((facility) => (
-                <div
-                  key={facility.FacilityID}
-                  className="flex items-start p-3 border rounded-lg shadow-sm bg-white"
-                >
-                  <span className="font-semibold text-lg text-[#3256E5] mr-2">
-                    {facility.FacilityName}:
-                  </span>
-                  <span className="text-lg text-gray-700">
-                    {facility.FDescription || "Description not available"}
-                  </span>
-                </div>
-              ))}
+      {/* Hero Section */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
+        <img
+          src={university.image_url}
+          alt={university.name}
+          className="w-full h-[400px] object-cover"
+        />
+        <div className="absolute inset-0 z-20 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {university.name}
+            </h1>
+            <div className="flex items-center justify-center space-x-4">
+              <div className="flex items-center">
+                <MapPin className="w-5 h-5 mr-2" />
+                <span>{university.location}</span>
+              </div>
+              <div className="flex items-center">
+                <Building2 className="w-5 h-5 mr-2" />
+                <span>{university.size}</span>
+              </div>
             </div>
-          ) : (
-            <p className="text-gray-500 text-lg">
-              No facilities available for this university.
-            </p>
-          )}
+          </div>
         </div>
       </div>
 
-      <CommentsSection
-        ratings={ratings}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Ratings Display */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center mb-6">
+            <GraduationCap className="w-8 h-8 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold">University Ratings</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {Object.entries(averageRatings).map(([category, rating]) => (
+              <div key={category} className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-medium text-gray-600 mb-2">
+                  {category.replace(/([A-Z])/g, " $1").trim()}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <div className="text-3xl font-bold text-blue-600">
+                    {rating.toFixed(1)}
+                  </div>
+                  <div className="flex items-center">
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <span className="ml-1 text-sm text-gray-500">/ 5</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Facilities Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center mb-6">
+            <Building2 className="w-8 h-8 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold">Popular Facilities</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {facilities.length > 0 ? (
+              facilities.map((facility) => (
+                <div
+                  key={facility.FacilityID}
+                  className="p-6 border rounded-lg hover:shadow-md transition-shadow bg-gray-50"
+                >
+                  <h3 className="font-semibold text-lg text-blue-600 mb-3">
+                    {facility.FacilityName}
+                  </h3>
+                  <p className="text-gray-700">
+                    {facility.FDescription || "Description not available"}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-lg col-span-full text-center py-8">
+                No facilities available for this university.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center mb-6">
+            <Star className="w-8 h-8 text-blue-600 mr-3" />
+            <h2 className="text-2xl font-bold">Student Reviews</h2>
+          </div>
+          <div className="max-h-[800px] overflow-y-auto pr-2">
+            <CommentsSection
+              ratings={ratings}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+          </div>
+        </div>
+
+        {/* Rate Button */}
+        <div className="flex justify-center mt-8">
+          <Link
+            to={`/client-rating/${university.UniversityID}`}
+            className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+          >
+            <Star className="w-5 h-5 mr-2" />
+            Rate this University
+          </Link>
+        </div>
+      </div>
 
       {confirmationVisible && (
         <ConfirmationDialog onConfirm={confirmDelete} onCancel={cancelDelete} />
       )}
 
-      {/* Rate Button */}
-      <div className="flex justify-center mt-10">
-        <Link to={`/client-rating/${university.UniversityID}`}>
-          <button className="text-white py-2 px-4 rounded-md bg-[#3256E5]">
-            Rate this University
-          </button>
-        </Link>
-      </div>
       <Footer />
     </div>
   );
