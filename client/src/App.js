@@ -7,18 +7,22 @@ import University from "./pages/university.js";
 import Universities from "./pages/universities.js";
 import Rating from "./pages/rating.js";
 import Rankings from "./pages/rankings.js";
+import Login from "./pages/login.js";
+import SignUp from "./pages/signup.js";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/account" element={<Account />} />
-        <Route path="/rankings" element={<Rankings />} />
-        <Route path="/university/:id" element={<University />} />
-        <Route path="/universities" element={<Universities />} />
-        <Route path="/rating/:id" element={<Rating />} />
+        <Route path="/client-about" element={<About />} />
+        <Route path="/client-account" element={<Account />} />
+        <Route path="/client-rankings" element={<Rankings />} />
+        <Route path="/client-university/:id" element={<University />} />
+        <Route path="/client-universities" element={<Universities />} />
+        <Route path="/client-rating/:id" element={<Rating />} />
+        <Route path="/client-login" element={<Login />} />
+        <Route path="/client-signup" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   );

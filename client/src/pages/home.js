@@ -22,7 +22,7 @@ function Home() {
       const data = await response.json();
 
       if (data.length > 0) {
-        navigate(`/university/${data[0].UniversityID}`);
+        navigate(`/client-university/${data[0].UniversityID}`);
       } else {
         alert("University not found");
       }

@@ -5,9 +5,9 @@ import { User, Settings, Star, LogOut } from "lucide-react";
 
 const navigation = [
   { name: "Home", href: "/", current: false },
-  { name: "Universities", href: "/universities", current: false },
-  { name: "Rankings", href: "/rankings", current: false },
-  { name: "About", href: "/about", current: false },
+  { name: "Universities", href: "/client-universities", current: false },
+  { name: "Rankings", href: "/client-rankings", current: false },
+  { name: "About", href: "/client-about", current: false },
 ];
 
 function classNames(...classes) {

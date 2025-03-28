@@ -2,11 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Import useParams
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import CommentsSection from "../components/CommentsSection";
+import RatingsDisplay from "../components/RatingsDisplay";
+import { Link } from "react-router-dom";
 
 function University() {
   const { id } = useParams(); // Get the university ID from the URL
   const [university, setUniversity] = useState(null); // State to store university data
   const [ratings, setRatings] = useState([]); // State to store ratings
+  const [confirmationVisible, setConfirmationVisible] = useState(false); // State to show confirmation dialog
+  const [commentToDelete, setCommentToDelete] = useState(null); // State to store the comment ID to be deleted
+  const [facilities, setFacilities] = useState([]); // State to store facilities
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -36,7 +43,6 @@ function University() {
           `http://localhost:5000/universities/${id}/ratings`
         );
         const data = await response.json();
-        console.log(data);
         setRatings(data);
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -45,6 +51,25 @@ function University() {
 
     fetchRatings();
   }, [id]);
+
+  // Fetch facilities data when the component mounts
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/facilities");
+        const data = await response.json();
+        // Filter facilities for the current university
+        const universityFacilities = data.filter(
+          (facility) => facility.UniversityID === parseInt(id)
+        );
+        setFacilities(universityFacilities);
+      } catch (error) {
+        console.error("Error fetching facilities:", error);
+      }
+    };
+
+    fetchFacilities();
+  }, [id]); // Fetch facilities when the university ID changes
 
   // Function to calculate average ratings
   const calculateAverageRatings = () => {
@@ -77,11 +102,120 @@ function University() {
         averages[key] /= totalRatings; // Calculate the average
       }
     }
-    console.log("Calculated averages:", averages);
     return averages;
   };
 
   const averageRatings = calculateAverageRatings();
+
+  const handleDelete = (ratingID) => {
+    setConfirmationVisible(true); // Show the confirmation dialog
+    setCommentToDelete(ratingID); // Set the comment to delete
+  };
+
+  const confirmDelete = async () => {
+    console.log("Deleting comment with ID:", commentToDelete); // Log for debugging
+
+    try {
+      // Construct the correct DELETE URL
+      const deleteUrl = `http://localhost:5000/ratings/${commentToDelete}`;
+      console.log("Sending DELETE request to:", deleteUrl); // Log the request URL for debugging
+
+      // Make the DELETE request to the backend
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+      });
+
+      console.log("Delete response:", response); // Log the response
+
+      if (response.ok) {
+        console.log("Comment deleted successfully.");
+        // Filter out the deleted rating from the state
+        setRatings(
+          ratings.filter((rating) => rating.RatingID !== commentToDelete)
+        );
+        setConfirmationVisible(false); // Hide the confirmation dialog
+        setCommentToDelete(null); // Clear the selected rating to delete
+        updateCategoryTable(); // Recalculate and update category table
+      } else {
+        const error = await response.json();
+        console.error(
+          "Failed to delete comment:",
+          error.message || response.status
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
+  const cancelDelete = () => {
+    setConfirmationVisible(false); // Hide the confirmation dialog without deleting
+    setCommentToDelete(null); // Clear the selected rating to delete
+  };
+
+  // Update the category table with the new average values
+  const updateCategoryTable = async () => {
+    const averages = calculateAverageRatings();
+
+    try {
+      const updateUrl = `http://localhost:5000/categories/${id}`; // Assuming UniversityID is the same as the 'id' for the university
+      const response = await fetch(updateUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          avgStudentLife: averages.StudentLife,
+          avgCost: averages.Cost,
+          avgDiningFood: averages.DiningFood,
+          avgDormsHousing: averages.DormsHousing,
+          avgClassesTeachers: averages.ClassesTeachers,
+          avgReturnOnInvestment: averages.ReturnOnInvestment,
+          avgHealthSafety: averages.HealthSafety,
+          avgCitySetting: averages.CitySetting,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Category table updated successfully.");
+      } else {
+        const error = await response.json();
+        console.error("Failed to update category table:", error.message);
+      }
+    } catch (error) {
+      console.error("Error updating category table:", error);
+    }
+  };
+
+  const handleEdit = async (ratingID, updatedComment) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/ratings/${ratingID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ RatingComment: updatedComment }),
+        }
+      );
+
+      if (response.ok) {
+        setRatings((prevRatings) =>
+          prevRatings.map((rating) =>
+            rating.RatingID === ratingID
+              ? { ...rating, RatingComment: updatedComment }
+              : rating
+          )
+        );
+        console.log("Comment updated successfully.");
+      } else {
+        console.error("Failed to update comment.");
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+    }
+  };
 
   if (!university) {
     return <div>Loading...</div>; // Show loading state
@@ -98,79 +232,53 @@ function University() {
       <h1 className="text-3xl font-bold text-center mb-6 mt-10">
         {university.name}
       </h1>
-      <div className="flex justify-around mb-6">
-        <div className="space-y-4">
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Student Life:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.StudentLife.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Cost:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.Cost.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Dining and Food:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.DiningFood.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Dorms and Housing:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.DormsHousing.toFixed(1)}
-            </span>
-          </div>
-        </div>
+      <RatingsDisplay averageRatings={averageRatings} />
 
+      {/* Popular Facilities Section */}
+      <div className=" justify-around items-start mt-20 px-4 ml-64 mr-72">
         <div className="space-y-4">
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Classes and Teachers:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.ClassesTeachers.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Return on Investment:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.ReturnOnInvestment.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">Health and Safety:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.HealthSafety.toFixed(1)}
-            </span>
-          </div>
-          <div className="flex items-center">
-            <span className="mr-2 text-2xl">City Setting:</span>
-            <span className="ml-2 text-xl font-semibold">
-              {averageRatings.CitySetting.toFixed(1)}
-            </span>
-          </div>
+          <span className="mr-2 text-2xl">Popular Facilities:</span>
+          {facilities.length > 0 ? (
+            <div className="space-y-4">
+              {facilities.map((facility) => (
+                <div
+                  key={facility.FacilityID}
+                  className="flex items-start p-3 border rounded-lg shadow-sm bg-white"
+                >
+                  <span className="font-semibold text-lg text-[#3256E5] mr-2">
+                    {facility.FacilityName}:
+                  </span>
+                  <span className="text-lg text-gray-700">
+                    {facility.FDescription || "Description not available"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-lg">
+              No facilities available for this university.
+            </p>
+          )}
         </div>
       </div>
-      {/* Display Comments */}
-      <div className="mt-20 ml-40">
-        <h2 className="text-2xl font-bold mb-4">Comments</h2>
-        {ratings.length === 0 ? (
-          <p>No comments yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {ratings.map((rating, index) => (
-              <div
-                key={index}
-                className="border p-4 rounded-md shadow-md mr-20"
-              >
-                <p className="text-lg font-medium">Comment:</p>
-                <p className="text-gray-700">{rating.RatingComment}</p>
-              </div>
-            ))}
-          </div>
-        )}
+
+      <CommentsSection
+        ratings={ratings}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+      />
+
+      {confirmationVisible && (
+        <ConfirmationDialog onConfirm={confirmDelete} onCancel={cancelDelete} />
+      )}
+
+      {/* Rate Button */}
+      <div className="flex justify-center mt-10">
+        <Link to={`/client-rating/${university.UniversityID}`}>
+          <button className="text-white py-2 px-4 rounded-md bg-[#3256E5]">
+            Rate this University
+          </button>
+        </Link>
       </div>
       <Footer />
     </div>

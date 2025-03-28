@@ -66,63 +66,63 @@ function Rankings() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Rankings</h1>
-          <DropDown onSelect={handleCategorySelect} />
-        </div>
+      <div className="flex items-center justify-between mt-12 ml-20 mr-20">
+        <h1 className="text-2xl font-bold">Rankings</h1>
+        <DropDown
+          onSelect={handleCategorySelect}
+          selectedCategory={selectedCategory}
+        />
+      </div>
 
-        <div className="flex flex-col space-y-6">
-          {sortedUniversities.length > 0 ? (
-            sortedUniversities.map((university) => (
+      <div className="flex justify-center p-6 flex-wrap space-y-6">
+        {sortedUniversities.length > 0 ? (
+          sortedUniversities.map((university) => (
+            <div
+              key={university.UniversityID}
+              className="flex border border-gray-200 shadow-lg rounded-lg p-4 mb-6 w-full max-w-4xl"
+            >
+              {/* Left side - Image */}
               <div
-                key={university.UniversityID}
-                className="flex border border-gray-200 shadow-lg rounded-lg p-4 w-full"
-              >
-                {/* Left side - Image */}
-                <div
-                  className="w-1/3 bg-cover rounded-l text-center overflow-hidden"
-                  style={{
-                    backgroundImage: `url(${
-                      university.image_url || "/img/placeholder.jpg"
-                    })`,
-                  }}
-                  title={university.name}
-                ></div>
+                className="w-1/3 bg-cover rounded-l text-center overflow-hidden"
+                style={{
+                  backgroundImage: `url(${
+                    university.image_url || "/img/placeholder.jpg"
+                  })`,
+                }}
+                title={university.name}
+              ></div>
 
-                {/* Right side - University Info */}
-                <div className="flex flex-col justify-between p-4 w-2/3">
-                  <h2 className="text-xl font-bold mb-2">{university.name}</h2>
-                  <p className="text-gray-500 mb-2">{university.location}</p>
-                  <p className="text-gray-600 mb-4">Size: {university.size}</p>
-                  <p className="text-lg font-semibold text-gray-700">
-                    Score:{" "}
-                    {university.score !== null
-                      ? university.score.toFixed(1)
-                      : "Not Available"}
-                  </p>
-                  <div className="flex space-x-4 mt-4">
-                    <Link
-                      to={`/university/${university.UniversityID}`}
-                      className="bg-[#3256E5] text-white py-2 px-4 rounded-md hover:bg-[#2744B8] transition-colors"
-                    >
+              {/* Right side - University Info */}
+              <div className="flex flex-col justify-between p-4 w-2/3">
+                <h2 className="text-xl font-bold mb-2">{university.name}</h2>
+                <p className="text-gray-500 mb-2">{university.location}</p>
+                <p className="text-gray-600 mb-4">Size: {university.size}</p>
+                <p className="text-lg font-semibold text-gray-700">
+                  Score:{" "}
+                  {university.score !== null
+                    ? university.score.toFixed(1)
+                    : "Not Available"}
+                </p>
+                <div className="flex space-x-4 mt-4">
+                  <button className="bg-[#3256E5] text-white py-2 px-4 rounded-md">
+                    <Link to={`/client-university/${university.UniversityID}`}>
                       View
                     </Link>
-                    <Link
-                      to={`/rating/${university.UniversityID}`}
-                      className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md hover:bg-[#3256E5] hover:text-white transition-colors"
-                    >
+                  </button>
+                  <button className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md">
+                    <Link to={`/client-rating/${university.UniversityID}`}>
                       Rate
                     </Link>
-                  </div>
+                  </button>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-600">Loading universities...</p>
-          )}
-        </div>
+            </div>
+          ))
+        ) : (
+          <p>Loading universities...</p>
+        )}
       </div>
+
       <Footer />
     </div>
   );
