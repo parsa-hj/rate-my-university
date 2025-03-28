@@ -163,7 +163,7 @@ function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/client-universities"
+              to="/signup"
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-base rounded-full inline-block"
             >
               Rate Your University
