@@ -32,7 +32,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="/universities"
+                  to="/client-universities"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   Universities
@@ -40,7 +40,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="/rankings"
+                  to="/client-rankings"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   Rankings
@@ -48,7 +48,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="/about"
+                  to="/client-about"
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   About

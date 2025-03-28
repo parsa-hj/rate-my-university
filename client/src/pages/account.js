@@ -1,81 +1,89 @@
 import Navbar from "../components/navbar";
 import React, { useState, useEffect } from "react";
+import { User, Settings, Star } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 function Account() {
-  // State to manage the currently active tab
-  const [activeTab, setActiveTab] = useState("profile");
-
-  // State to store fetched data
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("tab") || "profile"
+  );
   const [data, setData] = useState(null);
 
-  // Effect to fetch data when the component mounts
   useEffect(() => {
     fetchData();
-  }, []); // Empty dependency array ensures the effect runs once on mount
+  }, []);
 
-  // Function to fetch data
   const fetchData = async () => {
     try {
-      // Make a GET request using the Fetch API
       const response = await fetch("http://localhost:5000/students");
-
-      // Check if the response is successful (status code 200-299)
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-
-      // Parse the JSON data from the response
       const result = await response.json();
-
-      // Update the state with the fetched data
-      setData(result[0]); // Assuming the API returns an array with one student
+      setData(result[0]);
     } catch (error) {
       console.error("Error fetching data:", error.message);
     }
   };
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto p-4 bg-gray-100 mt-10">
-        <h1 className="text-3xl font-bold mb-6">Hello User!</h1>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Account Dashboard
+          </h1>
+          <p className="text-gray-600">
+            Manage your profile, settings, and reviews
+          </p>
+        </div>
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6">
-          <button
-            className={`py-2 px-4 rounded-lg focus:outline-none ${
-              activeTab === "profile"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("profile")}
-          >
-            Profile
-          </button>
-          <button
-            className={`py-2 px-4 rounded-lg focus:outline-none ${
-              activeTab === "settings"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("settings")}
-          >
-            Account Settings
-          </button>
-          <button
-            className={`py-2 px-4 rounded-lg focus:outline-none ${
-              activeTab === "ratings"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("ratings")}
-          >
-            My Ratings
-          </button>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex flex-wrap gap-4">
+            <button
+              className={`flex items-center px-6 py-3 rounded-full transition-colors ${
+                activeTab === "profile"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("profile")}
+            >
+              <User className="w-5 h-5 mr-2" />
+              Profile
+            </button>
+            <button
+              className={`flex items-center px-6 py-3 rounded-full transition-colors ${
+                activeTab === "settings"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("settings")}
+            >
+              <Settings className="w-5 h-5 mr-2" />
+              Account Settings
+            </button>
+            <button
+              className={`flex items-center px-6 py-3 rounded-full transition-colors ${
+                activeTab === "ratings"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+              onClick={() => setActiveTab("ratings")}
+            >
+              <Star className="w-5 h-5 mr-2" />
+              My Ratings
+            </button>
+          </div>
         </div>
 
         {/* Tab Content */}
-        <div className="border p-4 rounded-lg">
+        <div className="bg-white rounded-lg shadow-md p-6">
           {activeTab === "profile" && <ProfileContent data={data} />}
           {activeTab === "settings" && <SettingsContent data={data} />}
           {activeTab === "ratings" && <RatingsContent />}
@@ -88,63 +96,54 @@ function Account() {
 // Dummy content for the tabs
 const ProfileContent = ({ data }) => {
   if (!data) {
-    return <p>Loading...</p>; // Loading state while data is being fetched
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
+
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">Profile Information</h2>
-      <div className="space-y-4">
-        <div>
-          <span className="block text-lg font-medium text-gray-700">
-            First Name:
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        Profile Information
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            First Name
           </span>
-          <span className="block text-lg text-gray-900">
-            {data && data.first_name}
-          </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.first_name}</span>
         </div>
-        <div>
-          <span className="block text-lg font-medium text-gray-700">
-            Last Name:
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            Last Name
           </span>
-          <span className="block text-lg text-gray-900">
-            {data && data.last_name}
-          </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.last_name}</span>
         </div>
-        <div>
-          <span className="block text-lg font-medium text-gray-700">Age:</span>
-          <span className="block text-lg text-gray-900">
-            {data && data.age}
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            Age
           </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.age}</span>
         </div>
-        <div>
-          <span className="block text-lg font-medium text-gray-700">
-            School:
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            School
           </span>
-          <span className="block text-lg text-gray-900">
-            {data && data.school}
-          </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.school}</span>
         </div>
-        <div>
-          <span className="block text-lg font-medium text-gray-700">
-            Major:
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            Major
           </span>
-          <span className="block text-lg text-gray-900">
-            {data && data.major}
-          </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.major}</span>
         </div>
-        <div>
-          <span className="block text-lg font-medium text-gray-700">
-            Graduation Year:
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <span className="block text-sm font-medium text-gray-600 mb-1">
+            Graduation Year
           </span>
-          <span className="block text-lg text-gray-900">
-            {data && data.graduation_year}
-          </span>
-          {/* fetched data */}
+          <span className="text-lg text-gray-900">{data.graduation_year}</span>
         </div>
       </div>
     </div>
@@ -153,43 +152,38 @@ const ProfileContent = ({ data }) => {
 
 const SettingsContent = ({ data }) => (
   <div>
-    <h2 className="text-2xl font-semibold mb-4">Account Settings</h2>
-    <div className="space-y-4">
-      <div>
-        <span className="block text-lg font-medium text-gray-700">Email:</span>
-        <span className="block text-lg text-gray-900">
-          {data && data.email}
+    <h2 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <span className="block text-sm font-medium text-gray-600 mb-1">
+          Email
         </span>
-        {/* fetched data */}
+        <span className="text-lg text-gray-900">{data?.email}</span>
       </div>
-      <div>
-        <span className="block text-lg font-medium text-gray-700">
-          Password:
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <span className="block text-sm font-medium text-gray-600 mb-1">
+          Password
         </span>
-        <span className="block text-lg text-gray-900">*******</span>
-        {/* Example password - not fetched */}
+        <span className="text-lg text-gray-900">••••••••</span>
       </div>
     </div>
   </div>
 );
 
 const RatingsContent = () => {
-  // State to store ratings and universities data
   const [ratings, setRatings] = useState([]);
   const [universities, setUniversities] = useState([]);
 
-  // Fetch ratings and universities when component mounts
   useEffect(() => {
     fetchRatings();
     fetchUniversities();
   }, []);
 
-  // Function to fetch ratings data
   const fetchRatings = async () => {
     try {
       const response = await fetch(
         "http://localhost:5000/students/2778866/ratings"
-      ); // Assuming a generic ratings endpoint
+      );
       const data = await response.json();
       setRatings(data);
     } catch (error) {
@@ -197,7 +191,6 @@ const RatingsContent = () => {
     }
   };
 
-  // Function to fetch universities data
   const fetchUniversities = async () => {
     try {
       const response = await fetch("http://localhost:5000/universities");
@@ -208,7 +201,6 @@ const RatingsContent = () => {
     }
   };
 
-  // Function to get the university name based on UniversityID
   const getUniversityName = (universityId) => {
     const university = universities.find(
       (uni) => uni.UniversityID === universityId
@@ -218,61 +210,106 @@ const RatingsContent = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">My Ratings</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">My Ratings</h2>
       {ratings.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-8">
           {ratings.map((rating) => (
             <div
               key={rating.RatingID}
-              className="p-4 bg-white rounded-lg shadow-md"
+              className="bg-gray-50 rounded-lg p-6 border border-gray-200"
             >
-              <div className="flex justify-between">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-700">
-                    University:
-                  </h3>
-                  <p className="text-gray-900 font-semibold">
+                  <h3 className="text-xl font-semibold text-gray-900">
                     {getUniversityName(rating.UniversityID)}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {new Date(rating.RatingDate).toLocaleDateString()}
                   </p>
                 </div>
               </div>
-              {/* Additional rating fields */}
-              <div className="mt-2">
-                <p>
-                  <strong>Student Life:</strong> {rating.StudentLife}
-                </p>
-                <p>
-                  <strong>Classes & Teachers:</strong> {rating.ClassesTeachers}
-                </p>
-                <p>
-                  <strong>Cost:</strong> {rating.Cost}
-                </p>
-                <p>
-                  <strong>Return on Investment:</strong>{" "}
-                  {rating.ReturnOnInvestment}
-                </p>
-                <p>
-                  <strong>Dining & Food:</strong> {rating.DiningFood}
-                </p>
-                <p>
-                  <strong>Dorms & Housing:</strong> {rating.DormsHousing}
-                </p>
-                <p>
-                  <strong>Health & Safety:</strong> {rating.HealthSafety}
-                </p>
-                <p>
-                  <strong>City Setting:</strong> {rating.CitySetting}
-                </p>
-                <div>
-                  <h3 className="text-lg font-medium text-gray-700">Rating:</h3>
-                  <p className="text-gray-900">{rating.RatingComment}</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Student Life
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.StudentLife}
+                  </span>
                 </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Classes & Teachers
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.ClassesTeachers}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Cost
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.Cost}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    ROI
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.ReturnOnInvestment}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Dining & Food
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.DiningFood}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Dorms & Housing
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.DormsHousing}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    Health & Safety
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.HealthSafety}
+                  </span>
+                </div>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <span className="block text-sm font-medium text-gray-600">
+                    City Setting
+                  </span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {rating.CitySetting}
+                  </span>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">
+                  Review
+                </h4>
+                <p className="text-gray-900">{rating.RatingComment}</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p>No ratings available.</p>
+        <div className="text-center py-8">
+          <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500 text-lg">No ratings available yet.</p>
+        </div>
       )}
     </div>
   );

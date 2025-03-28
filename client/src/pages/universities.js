@@ -3,6 +3,7 @@ import Navbar from "../components/navbar";
 import mizzou from "../assets/images/mizzou.png"; // Use placeholder if image URLs are not available in API response
 import { Link } from "react-router-dom";
 import Footer from "../components/footer";
+import { MapPin, Building2 } from "lucide-react";
 
 function Universities() {
   const [universities, setUniversities] = useState([]); // State to store fetched university data
@@ -23,41 +24,80 @@ function Universities() {
   }, []); // Empty dependency array to ensure this runs once when component mounts
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <h1 className="text-2xl font-bold mt-12 ml-20">Results</h1>
-      <div className="flex justify-center space-x-14 p-6 flex-wrap">
-        {/* Map through the universities array and render a card for each university */}
-        {universities.length > 0 ? (
-          universities.map((university) => (
-            <div
-              key={university.UniversityID}
-              className="border border-gray-200 shadow-lg rounded-lg p-4 max-w-xs mb-6"
-            >
-              <img
-                src={university.image_url || mizzou} // Use the URL from the database, fallback to placeholder if not available
-                alt={university.name}
-                className="w-full h-auto mb-4 rounded-lg"
-              />
-              <h2 className="text-xl font-bold mb-2">{university.name}</h2>
-              <p className="text-gray-500 mb-4">{university.location}</p>
-              <div className="flex space-x-4">
-                <button className="bg-[#3256E5] text-white py-2 px-4 rounded-md">
-                  <Link to={`/client-university/${university.UniversityID}`}>
-                    View
-                  </Link>
-                </button>
-                <button className="border border-[#3256E5] text-[#3256E5] bg-white py-2 px-4 rounded-md">
-                  <Link to={`/client-rating/${university.UniversityID}`}>
-                    Rate
-                  </Link>
-                </button>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Universities
+            </h1>
+            <p className="text-gray-600">
+              Explore universities and find the perfect match for your academic
+              journey
+            </p>
+          </div>
+        </div>
+
+        {/* Universities Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {universities.length > 0 ? (
+            universities.map((university) => (
+              <div
+                key={university.UniversityID}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                {/* Image Section */}
+                <div className="relative h-48">
+                  <img
+                    src={university.image_url || mizzou} // Use the URL from the database, fallback to placeholder if not available
+                    alt={university.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Content Section */}
+                <div className="p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    {university.name}
+                  </h2>
+                  <div className="flex items-center text-gray-600 mb-2">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span>{university.location}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600 mb-4">
+                    <Building2 className="w-4 h-4 mr-1" />
+                    <span>{university.size}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <Link
+                      to={`/client-university/${university.UniversityID}`}
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                    >
+                      View Details
+                    </Link>
+                    <Link
+                      to={`/client-rating/${university.UniversityID}`}
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                    >
+                      Rate
+                    </Link>
+                  </div>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-500 text-lg">Loading universities...</p>
             </div>
-          ))
-        ) : (
-          <p>Loading universities...</p>
-        )}
+          )}
+        </div>
       </div>
 
       <Footer />

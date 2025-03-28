@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import app_logo from "../assets/images/rmu-logo.png";
 import { User, Settings, Star, LogOut } from "lucide-react";
 
@@ -16,6 +16,12 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleAccountNavigation = (tab) => {
+    setIsDropdownOpen(false);
+    navigate(`/client-account?tab=${tab}`);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
@@ -56,27 +62,27 @@ export default function Navbar() {
 
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
-                <Link
-                  to="/account"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <button
+                  onClick={() => handleAccountNavigation("profile")}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
-                </Link>
-                <Link
-                  to="/settings"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                </button>
+                <button
+                  onClick={() => handleAccountNavigation("settings")}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
-                </Link>
-                <Link
-                  to="/account"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                </button>
+                <button
+                  onClick={() => handleAccountNavigation("ratings")}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   <Star className="mr-2 h-4 w-4" />
                   <span>My Ratings</span>
-                </Link>
+                </button>
                 <div className="border-t border-gray-100 my-1"></div>
                 <button
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -113,24 +119,24 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="border-t border-gray-100"></div>
-              <Link
-                to="/account"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <button
+                onClick={() => handleAccountNavigation("profile")}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Profile
-              </Link>
-              <Link
-                to="/settings"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              </button>
+              <button
+                onClick={() => handleAccountNavigation("settings")}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Settings
-              </Link>
-              <Link
-                to="/account"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              </button>
+              <button
+                onClick={() => handleAccountNavigation("ratings")}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 My Ratings
-              </Link>
+              </button>
             </div>
           )}
         </div>
