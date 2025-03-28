@@ -7,6 +7,7 @@ import illustration1 from "../assets/images/illustration1.png";
 import illustration2 from "../assets/images/illustration2.png";
 import illustration3 from "../assets/images/illustration3.png";
 import { Search, ThumbsUp } from "lucide-react";
+import { getUniversities } from "../lib/api";
 
 function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,20 +15,16 @@ function Home() {
 
   const handleSearch = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/universities?name=${encodeURIComponent(
-          searchQuery
-        )}`
-      );
-      const data = await response.json();
+      const universities = await getUniversities(searchQuery);
 
-      if (data.length > 0) {
-        navigate(`/client-university/${data[0].UniversityID}`);
+      if (universities.length > 0) {
+        navigate(`/client-university/${universities[0].universityid}`);
       } else {
         alert("University not found");
       }
     } catch (error) {
       console.error("Error fetching university data:", error);
+      alert("Error searching for university");
     }
   };
 

@@ -2,6 +2,7 @@ import Navbar from "../components/navbar";
 import React, { useState, useEffect } from "react";
 import { User, Settings, Star } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { getStudents, getStudentRatings, getUniversities } from "../lib/api";
 
 function Account() {
   const [searchParams] = useSearchParams();
@@ -16,12 +17,10 @@ function Account() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/students");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const students = await getStudents();
+      if (students && students.length > 0) {
+        setData(students[0]);
       }
-      const result = await response.json();
-      setData(result[0]);
     } catch (error) {
       console.error("Error fetching data:", error.message);
     }
@@ -173,40 +172,42 @@ const SettingsContent = ({ data }) => (
 const RatingsContent = () => {
   const [ratings, setRatings] = useState([]);
   const [universities, setUniversities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRatings();
-    fetchUniversities();
+    fetchData();
   }, []);
 
-  const fetchRatings = async () => {
+  const fetchData = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/students/2778866/ratings"
-      );
-      const data = await response.json();
-      setRatings(data);
+      setLoading(true);
+      const [ratingsData, universitiesData] = await Promise.all([
+        getStudentRatings(2778866),
+        getUniversities(),
+      ]);
+      setRatings(ratingsData);
+      setUniversities(universitiesData);
     } catch (error) {
-      console.error("Error fetching ratings:", error);
-    }
-  };
-
-  const fetchUniversities = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/universities");
-      const data = await response.json();
-      setUniversities(data);
-    } catch (error) {
-      console.error("Error fetching universities:", error);
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const getUniversityName = (universityId) => {
     const university = universities.find(
-      (uni) => uni.UniversityID === universityId
+      (uni) => uni.universityid === universityId
     );
     return university ? university.name : "Unknown University";
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -215,16 +216,16 @@ const RatingsContent = () => {
         <div className="space-y-8">
           {ratings.map((rating) => (
             <div
-              key={rating.RatingID}
+              key={rating.ratingid}
               className="bg-gray-50 rounded-lg p-6 border border-gray-200"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {getUniversityName(rating.UniversityID)}
+                    {getUniversityName(rating.universityid)}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {new Date(rating.RatingDate).toLocaleDateString()}
+                    {new Date(rating.ratingdate).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -235,7 +236,7 @@ const RatingsContent = () => {
                     Student Life
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.StudentLife}
+                    {rating.studentlife}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -243,7 +244,7 @@ const RatingsContent = () => {
                     Classes & Teachers
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.ClassesTeachers}
+                    {rating.classesteachers}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -251,7 +252,7 @@ const RatingsContent = () => {
                     Cost
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.Cost}
+                    {rating.cost}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -259,7 +260,7 @@ const RatingsContent = () => {
                     ROI
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.ReturnOnInvestment}
+                    {rating.returnoninvestment}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -267,7 +268,7 @@ const RatingsContent = () => {
                     Dining & Food
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.DiningFood}
+                    {rating.diningfood}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -275,7 +276,7 @@ const RatingsContent = () => {
                     Dorms & Housing
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.DormsHousing}
+                    {rating.dormshousing}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -283,7 +284,7 @@ const RatingsContent = () => {
                     Health & Safety
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.HealthSafety}
+                    {rating.healthsafety}
                   </span>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -291,7 +292,7 @@ const RatingsContent = () => {
                     City Setting
                   </span>
                   <span className="text-lg font-semibold text-blue-600">
-                    {rating.CitySetting}
+                    {rating.citysetting}
                   </span>
                 </div>
               </div>
@@ -300,7 +301,7 @@ const RatingsContent = () => {
                 <h4 className="text-sm font-medium text-gray-600 mb-2">
                   Review
                 </h4>
-                <p className="text-gray-900">{rating.RatingComment}</p>
+                <p className="text-gray-900">{rating.ratingcomment}</p>
               </div>
             </div>
           ))}

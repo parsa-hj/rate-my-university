@@ -6,6 +6,13 @@ import ConfirmationDialog from "../components/ConfirmationDialog";
 import CommentsSection from "../components/CommentsSection";
 import RatingsDisplay from "../components/RatingsDisplay";
 import { MapPin, Building2, GraduationCap, Star } from "lucide-react";
+import {
+  getUniversityById,
+  getRatings,
+  getFacilities,
+  deleteRating,
+  updateRating,
+} from "../lib/api";
 
 function University() {
   const { id } = useParams();
@@ -19,30 +26,21 @@ function University() {
   useEffect(() => {
     const fetchUniversityData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/universities/${id}`
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setUniversity(data); // Store the university data in state
+        const data = await getUniversityById(id);
+        setUniversity(data);
       } catch (error) {
         console.error("Error fetching university data:", error);
       }
     };
 
     fetchUniversityData();
-  }, [id]); // Fetch data when the ID changes
+  }, [id]);
 
   // Fetch ratings for the university
   useEffect(() => {
     const fetchRatings = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/universities/${id}/ratings`
-        );
-        const data = await response.json();
+        const data = await getRatings(id);
         setRatings(data);
       } catch (error) {
         console.error("Error fetching ratings:", error);
@@ -56,11 +54,9 @@ function University() {
   useEffect(() => {
     const fetchFacilities = async () => {
       try {
-        const response = await fetch("http://localhost:5000/facilities");
-        const data = await response.json();
-        // Filter facilities for the current university
+        const data = await getFacilities();
         const universityFacilities = data.filter(
-          (facility) => facility.UniversityID === parseInt(id)
+          (facility) => facility.universityid === parseInt(id)
         );
         setFacilities(universityFacilities);
       } catch (error) {
@@ -69,32 +65,32 @@ function University() {
     };
 
     fetchFacilities();
-  }, [id]); // Fetch facilities when the university ID changes
+  }, [id]);
 
   // Function to calculate average ratings
   const calculateAverageRatings = () => {
     const averages = {
-      StudentLife: 0,
-      Cost: 0,
-      DiningFood: 0,
-      DormsHousing: 0,
-      ClassesTeachers: 0,
-      ReturnOnInvestment: 0,
-      HealthSafety: 0,
-      CitySetting: 0,
+      studentlife: 0,
+      cost: 0,
+      diningfood: 0,
+      dormshousing: 0,
+      classesteachers: 0,
+      returnoninvestment: 0,
+      healthsafety: 0,
+      citysetting: 0,
     };
 
     if (ratings.length > 0) {
       ratings.forEach((rating) => {
-        averages.StudentLife += parseFloat(rating.StudentLife) || 0;
-        averages.Cost += parseFloat(rating.Cost) || 0;
-        averages.DiningFood += parseFloat(rating.DiningFood) || 0;
-        averages.DormsHousing += parseFloat(rating.DormsHousing) || 0;
-        averages.ClassesTeachers += parseFloat(rating.ClassesTeachers) || 0;
-        averages.ReturnOnInvestment +=
-          parseFloat(rating.ReturnOnInvestment) || 0;
-        averages.HealthSafety += parseFloat(rating.HealthSafety) || 0;
-        averages.CitySetting += parseFloat(rating.CitySetting) || 0;
+        averages.studentlife += parseFloat(rating.studentlife) || 0;
+        averages.cost += parseFloat(rating.cost) || 0;
+        averages.diningfood += parseFloat(rating.diningfood) || 0;
+        averages.dormshousing += parseFloat(rating.dormshousing) || 0;
+        averages.classesteachers += parseFloat(rating.classesteachers) || 0;
+        averages.returnoninvestment +=
+          parseFloat(rating.returnoninvestment) || 0;
+        averages.healthsafety += parseFloat(rating.healthsafety) || 0;
+        averages.citysetting += parseFloat(rating.citysetting) || 0;
       });
 
       const totalRatings = ratings.length;
@@ -107,111 +103,39 @@ function University() {
 
   const averageRatings = calculateAverageRatings();
 
-  const handleDelete = (ratingID) => {
-    setConfirmationVisible(true); // Show the confirmation dialog
-    setCommentToDelete(ratingID); // Set the comment to delete
+  const handleDelete = (ratingid) => {
+    setConfirmationVisible(true);
+    setCommentToDelete(ratingid);
   };
 
   const confirmDelete = async () => {
-    console.log("Deleting comment with ID:", commentToDelete); // Log for debugging
-
     try {
-      // Construct the correct DELETE URL
-      const deleteUrl = `http://localhost:5000/ratings/${commentToDelete}`;
-      console.log("Sending DELETE request to:", deleteUrl); // Log the request URL for debugging
-
-      // Make the DELETE request to the backend
-      const response = await fetch(deleteUrl, {
-        method: "DELETE",
-      });
-
-      console.log("Delete response:", response); // Log the response
-
-      if (response.ok) {
-        console.log("Comment deleted successfully.");
-        // Filter out the deleted rating from the state
-        setRatings(
-          ratings.filter((rating) => rating.RatingID !== commentToDelete)
-        );
-        setConfirmationVisible(false); // Hide the confirmation dialog
-        setCommentToDelete(null); // Clear the selected rating to delete
-        updateCategoryTable(); // Recalculate and update category table
-      } else {
-        const error = await response.json();
-        console.error(
-          "Failed to delete comment:",
-          error.message || response.status
-        );
-      }
+      await deleteRating(commentToDelete);
+      setRatings(
+        ratings.filter((rating) => rating.ratingid !== commentToDelete)
+      );
+      setConfirmationVisible(false);
+      setCommentToDelete(null);
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
   };
 
   const cancelDelete = () => {
-    setConfirmationVisible(false); // Hide the confirmation dialog without deleting
-    setCommentToDelete(null); // Clear the selected rating to delete
+    setConfirmationVisible(false);
+    setCommentToDelete(null);
   };
 
-  // Update the category table with the new average values
-  const updateCategoryTable = async () => {
-    const averages = calculateAverageRatings();
-
+  const handleEdit = async (ratingid, updatedComment) => {
     try {
-      const updateUrl = `http://localhost:5000/categories/${id}`; // Assuming UniversityID is the same as the 'id' for the university
-      const response = await fetch(updateUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          avgStudentLife: averages.StudentLife,
-          avgCost: averages.Cost,
-          avgDiningFood: averages.DiningFood,
-          avgDormsHousing: averages.DormsHousing,
-          avgClassesTeachers: averages.ClassesTeachers,
-          avgReturnOnInvestment: averages.ReturnOnInvestment,
-          avgHealthSafety: averages.HealthSafety,
-          avgCitySetting: averages.CitySetting,
-        }),
-      });
-
-      if (response.ok) {
-        console.log("Category table updated successfully.");
-      } else {
-        const error = await response.json();
-        console.error("Failed to update category table:", error.message);
-      }
-    } catch (error) {
-      console.error("Error updating category table:", error);
-    }
-  };
-
-  const handleEdit = async (ratingID, updatedComment) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/ratings/${ratingID}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ RatingComment: updatedComment }),
-        }
+      await updateRating(ratingid, updatedComment);
+      setRatings((prevRatings) =>
+        prevRatings.map((rating) =>
+          rating.ratingid === ratingid
+            ? { ...rating, ratingcomment: updatedComment }
+            : rating
+        )
       );
-
-      if (response.ok) {
-        setRatings((prevRatings) =>
-          prevRatings.map((rating) =>
-            rating.RatingID === ratingID
-              ? { ...rating, RatingComment: updatedComment }
-              : rating
-          )
-        );
-        console.log("Comment updated successfully.");
-      } else {
-        console.error("Failed to update comment.");
-      }
     } catch (error) {
       console.error("Error updating comment:", error);
     }
@@ -294,14 +218,15 @@ function University() {
             {facilities.length > 0 ? (
               facilities.map((facility) => (
                 <div
-                  key={facility.FacilityID}
+                  key={facility.facilityid}
                   className="p-6 border rounded-lg hover:shadow-md transition-shadow bg-gray-50"
                 >
                   <h3 className="font-semibold text-lg text-blue-600 mb-3">
-                    {facility.FacilityName}
+                    {facility.facilityname}
                   </h3>
                   <p className="text-gray-700">
-                    {facility.FDescription || "Description not available"}
+                    {facility.facilitydescription ||
+                      "Description not available"}
                   </p>
                 </div>
               ))
@@ -331,7 +256,7 @@ function University() {
         {/* Rate Button */}
         <div className="flex justify-center mt-8">
           <Link
-            to={`/client-rating/${university.UniversityID}`}
+            to={`/client-rating/${university.universityid}`}
             className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
           >
             <Star className="w-5 h-5 mr-2" />

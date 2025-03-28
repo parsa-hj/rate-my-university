@@ -6,8 +6,8 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
   const [editingComment, setEditingComment] = useState(null);
   const [newComment, setNewComment] = useState("");
 
-  const startEditing = (ratingID, currentComment) => {
-    setEditingComment(ratingID);
+  const startEditing = (ratingid, currentComment) => {
+    setEditingComment(ratingid);
     setNewComment(currentComment);
   };
 
@@ -37,24 +37,24 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                 <div className="flex items-center space-x-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-blue-600 font-semibold">
-                      {rating.StudentName
-                        ? rating.StudentName[0].toUpperCase()
+                      {rating.studentname
+                        ? rating.studentname[0].toUpperCase()
                         : "A"}
                     </span>
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">
-                      {rating.StudentName || "Anonymous Student"}
+                      {rating.studentname || "Anonymous Student"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {new Date(rating.RatingDate).toLocaleDateString()}
+                      {new Date(rating.ratingdate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="flex space-x-2">
                   <button
                     onClick={() =>
-                      startEditing(rating.RatingID, rating.RatingComment)
+                      startEditing(rating.ratingid, rating.ratingcomment)
                     }
                     className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                     title="Edit review"
@@ -62,7 +62,7 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                     <PencilSquareIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => onDelete(rating.RatingID)}
+                    onClick={() => onDelete(rating.ratingid)}
                     className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
                     title="Delete review"
                   >
@@ -71,7 +71,7 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                 </div>
               </div>
 
-              {editingComment === rating.RatingID ? (
+              {editingComment === rating.ratingid ? (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -105,14 +105,14 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                     {Object.entries(rating)
                       .filter(([key]) =>
                         [
-                          "StudentLife",
-                          "Cost",
-                          "DiningFood",
-                          "DormsHousing",
-                          "ClassesTeachers",
-                          "ReturnOnInvestment",
-                          "HealthSafety",
-                          "CitySetting",
+                          "studentlife",
+                          "cost",
+                          "diningfood",
+                          "dormshousing",
+                          "classesteachers",
+                          "returnoninvestment",
+                          "healthsafety",
+                          "citysetting",
                         ].includes(key)
                       )
                       .map(([key, value]) => (
@@ -130,7 +130,7 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                       ))}
                   </div>
                   <p className="text-gray-700 leading-relaxed">
-                    {rating.RatingComment}
+                    {rating.ratingcomment}
                   </p>
                 </div>
               )}

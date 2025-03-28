@@ -4,6 +4,7 @@ import mizzou from "../assets/images/mizzou.png"; // Use placeholder if image UR
 import { Link } from "react-router-dom";
 import Footer from "../components/footer";
 import { MapPin, Building2 } from "lucide-react";
+import { getUniversities } from "../lib/api";
 
 function Universities() {
   const [universities, setUniversities] = useState([]); // State to store fetched university data
@@ -12,8 +13,7 @@ function Universities() {
     // Fetch data from the backend when the component mounts
     const fetchUniversities = async () => {
       try {
-        const response = await fetch("http://localhost:5000/universities");
-        const data = await response.json();
+        const data = await getUniversities();
         setUniversities(data); // Set the fetched data into the state
       } catch (error) {
         console.error("Error fetching universities:", error);
@@ -47,7 +47,7 @@ function Universities() {
           {universities.length > 0 ? (
             universities.map((university) => (
               <div
-                key={university.UniversityID}
+                key={university.universityid}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Image Section */}
@@ -76,13 +76,13 @@ function Universities() {
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     <Link
-                      to={`/client-university/${university.UniversityID}`}
+                      to={`/client-university/${university.universityid}`}
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
                     >
                       View Details
                     </Link>
                     <Link
-                      to={`/client-rating/${university.UniversityID}`}
+                      to={`/client-rating/${university.universityid}`}
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                     >
                       Rate

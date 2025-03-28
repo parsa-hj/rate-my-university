@@ -4,6 +4,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Stars from "../components/starts";
 import { Star, ArrowLeft } from "lucide-react";
+import { getUniversityById, createRating } from "../lib/api";
 
 function Rating() {
   const { id } = useParams();
@@ -26,10 +27,7 @@ function Rating() {
   useEffect(() => {
     const fetchUniversity = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/universities/${id}`
-        );
-        const data = await response.json();
+        const data = await getUniversityById(id);
         setUniversity(data);
       } catch (error) {
         console.error("Failed to fetch university data:", error);
@@ -39,7 +37,7 @@ function Rating() {
     fetchUniversity();
   }, [id]);
 
-  // Submit the rating data to the server
+  // Submit the rating data to Supabase
   const handleSubmitRating = async () => {
     if (!userComment || userComment.trim() === "") {
       alert("Please enter a comment.");
@@ -47,39 +45,26 @@ function Rating() {
     }
 
     const ratingData = {
-      UniversityID: id,
-      StudentID: 2778866,
-      RatingComment: userComment,
-      StudentLife: studentLifeScore,
-      ClassesTeachers: classesTeachersScore,
-      Cost: costScore,
-      ReturnOnInvestment: roiScore,
-      DiningFood: diningFoodScore,
-      DormsHousing: dormsHousingScore,
-      HealthSafety: healthSafetyScore,
-      CitySetting: citySettingScore,
+      universityid: id,
+      studentid: 2778866,
+      ratingcomment: userComment,
+      studentlife: studentLifeScore,
+      classesteachers: classesTeachersScore,
+      cost: costScore,
+      returnoninvestment: roiScore,
+      diningfood: diningFoodScore,
+      dormshousing: dormsHousingScore,
+      healthsafety: healthSafetyScore,
+      citysetting: citySettingScore,
     };
 
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/ratings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ratingData),
-      });
-
-      if (response.ok) {
-        alert("Rating submitted successfully");
-        resetForm();
-        navigate(`/client-universities`);
-      } else {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-        alert("Failed to submit rating: " + errorText);
-      }
+      await createRating(ratingData);
+      alert("Rating submitted successfully");
+      resetForm();
+      navigate(`/client-universities`);
     } catch (error) {
       console.error("Failed to submit rating:", error);
       alert("Failed to submit rating: " + error.message);

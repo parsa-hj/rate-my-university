@@ -1,68 +1,113 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar";
 import DropDown from "../components/dropdown";
 import { Star, MapPin, Building2 } from "lucide-react";
+import { getUniversities, getUniversityAverages } from "../lib/api";
+import { useSupabaseQuery } from "../hooks/useSupabaseQuery";
+import ErrorMessage from "../components/ErrorMessage";
 
 function Rankings() {
-  const [universities, setUniversities] = useState([]); // State to store fetched university data
-  const [selectedCategory, setSelectedCategory] = useState("StudentLife"); // State to store selected category (default to StudentLife)
-  const [scores, setScores] = useState([]); // State to store fetched scores data
+  const [selectedCategory, setSelectedCategory] = useState("StudentLife");
 
-  useEffect(() => {
-    // Fetch universities data
-    const fetchUniversities = async () => {
+  // Fetch universities
+  const {
+    data: universities,
+    loading: universitiesLoading,
+    error: universitiesError,
+  } = useSupabaseQuery(() => getUniversities());
+
+  // Fetch averages for all universities
+  const {
+    data: scores,
+    loading: scoresLoading,
+    error: scoresError,
+  } = useSupabaseQuery(async () => {
+    if (!universities) return [];
+    const averagesPromises = universities.map(async (university) => {
       try {
-        const response = await fetch("http://localhost:5000/universities");
-        const data = await response.json();
-        setUniversities(data); // Set universities data
+        const averages = await getUniversityAverages(university.universityid);
+        return {
+          universityid: university.universityid,
+          avgstudentlife: averages?.avgstudentlife || 0,
+          avgclassesteachers: averages?.avgclassesteachers || 0,
+          avgcost: averages?.avgcost || 0,
+          avgreturnoninvestment: averages?.avgreturnoninvestment || 0,
+          avgdiningfood: averages?.avgdiningfood || 0,
+          avgdormshousing: averages?.avgdormshousing || 0,
+          avghealthsafety: averages?.avghealthsafety || 0,
+          avgcitysetting: averages?.avgcitysetting || 0,
+        };
       } catch (error) {
-        console.error("Error fetching universities:", error);
+        console.error(
+          `Error fetching averages for university ${university.universityid}:`,
+          error
+        );
+        return null;
       }
-    };
+    });
+    return (await Promise.all(averagesPromises)).filter(Boolean);
+  }, [universities]);
 
-    // Fetch average scores data
-    const fetchScores = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/avgscores");
-        const data = await response.json();
-        setScores(data); // Set scores data
-      } catch (error) {
-        console.error("Error fetching scores:", error);
-      }
-    };
-
-    fetchUniversities();
-    fetchScores();
-  }, []);
-
-  // Combine universities with scores, selecting the correct category dynamically
+  // Combine universities with scores
   const universitiesWithScores = useMemo(() => {
+    if (!universities || !scores) return [];
     return universities.map((university) => {
       const score = scores.find(
-        (score) => score.UniversityID === university.UniversityID
+        (score) => score.universityid === university.universityid
       );
       return {
         ...university,
-        score: score ? score[`Avg${selectedCategory}`] : null, // Dynamically access the score based on the selected category
+        score: score ? score[`avg${selectedCategory.toLowerCase()}`] : 0,
       };
     });
-  }, [universities, scores, selectedCategory]); // Recompute when universities, scores, or selectedCategory change
+  }, [universities, scores, selectedCategory]);
 
-  // Sort universities based on the selected category
+  // Sort universities
   const sortedUniversities = useMemo(() => {
     return universitiesWithScores.sort((a, b) => {
       if (a.score === null) return 1;
       if (b.score === null) return -1;
-      return b.score - a.score; // Sort from highest to lowest score
+      return b.score - a.score;
     });
-  }, [universitiesWithScores]); // Recompute only when universitiesWithScores change
+  }, [universitiesWithScores]);
 
-  // Handle category selection from the dropdown
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
   };
+
+  // Handle loading state
+  if (universitiesLoading || scoresLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500 text-lg">Loading universities...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (universitiesError || scoresError) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <ErrorMessage
+            message={universitiesError || scoresError}
+            onRetry={() => window.location.reload()}
+          />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -98,7 +143,7 @@ function Rankings() {
           {sortedUniversities.length > 0 ? (
             sortedUniversities.map((university) => (
               <div
-                key={university.UniversityID}
+                key={university.universityid}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
               >
                 <div className="flex flex-col md:flex-row">
@@ -140,13 +185,13 @@ function Rankings() {
                         </div>
                         <div className="flex gap-3">
                           <Link
-                            to={`/client-university/${university.UniversityID}`}
+                            to={`/client-university/${university.universityid}`}
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
                           >
                             View Details
                           </Link>
                           <Link
-                            to={`/client-rating/${university.UniversityID}`}
+                            to={`/client-rating/${university.universityid}`}
                             className="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
                           >
                             Rate
@@ -160,8 +205,7 @@ function Rankings() {
             ))
           ) : (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-500 text-lg">Loading universities...</p>
+              <p className="text-gray-500 text-lg">No universities found.</p>
             </div>
           )}
         </div>
