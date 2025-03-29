@@ -54,9 +54,9 @@ function Rankings() {
     fetchScores();
   }, [universities]);
 
-  // Real-time subscription effect
+  // Modify the real-time subscription effect
   useEffect(() => {
-    const subscription = supabase
+    const ratingSubscription = supabase
       .channel("rating_changes")
       .on(
         "postgres_changes",
@@ -65,7 +65,31 @@ function Rankings() {
           schema: "public",
           table: "rating",
         },
-        async () => {
+        async (payload) => {
+          console.log("Rating change detected in Rankings:", payload);
+          if (universities) {
+            const newScores = await Promise.all(
+              universities.map((university) =>
+                getUniversityAverages(university.universityid)
+              )
+            );
+            setScores(newScores.filter(Boolean));
+          }
+        }
+      )
+      .subscribe();
+
+    const categorySubscription = supabase
+      .channel("category_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "category",
+        },
+        async (payload) => {
+          console.log("Category change detected in Rankings:", payload);
           if (universities) {
             const newScores = await Promise.all(
               universities.map((university) =>
@@ -79,7 +103,8 @@ function Rankings() {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      ratingSubscription.unsubscribe();
+      categorySubscription.unsubscribe();
     };
   }, [universities]);
 

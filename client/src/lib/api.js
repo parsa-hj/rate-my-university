@@ -138,3 +138,25 @@ export const getStudents = async () => {
   if (error) throw error;
   return data;
 };
+
+// New function to update category averages
+export const updateCategoryAverages = async (universityId, averages) => {
+  const { data, error } = await supabase
+    .from("category")
+    .upsert({
+      universityid: universityId,
+      avgstudentlife: averages.studentlife,
+      avgclassesteachers: averages.classesteachers,
+      avgcost: averages.cost,
+      avgreturnoninvestment: averages.returnoninvestment,
+      avgdiningfood: averages.diningfood,
+      avgdormshousing: averages.dormshousing,
+      avghealthsafety: averages.healthsafety,
+      avgcitysetting: averages.citysetting,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};

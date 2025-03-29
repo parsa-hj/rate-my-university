@@ -11,6 +11,8 @@ import {
   getFacilities,
   deleteRating,
   updateRating,
+  getUniversityAverages,
+  updateCategoryAverages,
 } from "../lib/api";
 import { supabase } from "../lib/supabaseClient";
 
@@ -21,6 +23,16 @@ function University() {
   const [confirmationVisible, setConfirmationVisible] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [facilities, setFacilities] = useState([]);
+  const [averageRatings, setAverageRatings] = useState({
+    studentlife: 0,
+    cost: 0,
+    diningfood: 0,
+    dormshousing: 0,
+    classesteachers: 0,
+    returnoninvestment: 0,
+    healthsafety: 0,
+    citysetting: 0,
+  });
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -42,6 +54,13 @@ function University() {
       try {
         const data = await getRatings(id);
         setRatings(data);
+
+        // Calculate and update averages
+        const newAverages = calculateAverages(data);
+        if (newAverages) {
+          await updateCategoryAverages(parseInt(id), newAverages);
+          setAverageRatings(newAverages);
+        }
       } catch (error) {
         console.error("Error fetching ratings:", error);
       }
@@ -67,9 +86,34 @@ function University() {
     fetchFacilities();
   }, [id]);
 
+  // Add new useEffect for fetching averages
   useEffect(() => {
-    // Subscribe to changes in the rating table
-    const subscription = supabase
+    const fetchAverages = async () => {
+      try {
+        const data = await getUniversityAverages(id);
+        if (data) {
+          setAverageRatings({
+            studentlife: data.avgstudentlife || 0,
+            cost: data.avgcost || 0,
+            diningfood: data.avgdiningfood || 0,
+            dormshousing: data.avgdormshousing || 0,
+            classesteachers: data.avgclassesteachers || 0,
+            returnoninvestment: data.avgreturnoninvestment || 0,
+            healthsafety: data.avghealthsafety || 0,
+            citysetting: data.avgcitysetting || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching average ratings:", error);
+      }
+    };
+
+    fetchAverages();
+  }, [id]);
+
+  // Modify the existing subscription useEffect
+  useEffect(() => {
+    const ratingSubscription = supabase
       .channel("rating_changes")
       .on(
         "postgres_changes",
@@ -80,53 +124,24 @@ function University() {
           filter: `universityid=eq.${id}`,
         },
         async (payload) => {
-          // Refresh ratings when changes occur
-          const data = await getRatings(id);
-          setRatings(data);
+          console.log("Rating change detected in University:", payload);
+          // Fetch new ratings and recalculate averages
+          const ratingsData = await getRatings(id);
+          setRatings(ratingsData);
+
+          const newAverages = calculateAverages(ratingsData);
+          if (newAverages) {
+            await updateCategoryAverages(parseInt(id), newAverages);
+            setAverageRatings(newAverages);
+          }
         }
       )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      ratingSubscription.unsubscribe();
     };
   }, [id]);
-
-  // Function to calculate average ratings
-  const calculateAverageRatings = () => {
-    const averages = {
-      studentlife: 0,
-      cost: 0,
-      diningfood: 0,
-      dormshousing: 0,
-      classesteachers: 0,
-      returnoninvestment: 0,
-      healthsafety: 0,
-      citysetting: 0,
-    };
-
-    if (ratings.length > 0) {
-      ratings.forEach((rating) => {
-        averages.studentlife += parseFloat(rating.studentlife) || 0;
-        averages.cost += parseFloat(rating.cost) || 0;
-        averages.diningfood += parseFloat(rating.diningfood) || 0;
-        averages.dormshousing += parseFloat(rating.dormshousing) || 0;
-        averages.classesteachers += parseFloat(rating.classesteachers) || 0;
-        averages.returnoninvestment +=
-          parseFloat(rating.returnoninvestment) || 0;
-        averages.healthsafety += parseFloat(rating.healthsafety) || 0;
-        averages.citysetting += parseFloat(rating.citysetting) || 0;
-      });
-
-      const totalRatings = ratings.length;
-      for (const key in averages) {
-        averages[key] /= totalRatings; // Calculate the average
-      }
-    }
-    return averages;
-  };
-
-  const averageRatings = calculateAverageRatings();
 
   const handleDelete = (ratingid) => {
     setConfirmationVisible(true);
@@ -164,6 +179,43 @@ function University() {
     } catch (error) {
       console.error("Error updating comment:", error);
     }
+  };
+
+  // Add this function to calculate averages
+  const calculateAverages = (ratings) => {
+    if (!ratings.length) return null;
+
+    const sums = ratings.reduce(
+      (acc, rating) => ({
+        studentlife: acc.studentlife + rating.studentlife,
+        classesteachers: acc.classesteachers + rating.classesteachers,
+        cost: acc.cost + rating.cost,
+        returnoninvestment: acc.returnoninvestment + rating.returnoninvestment,
+        diningfood: acc.diningfood + rating.diningfood,
+        dormshousing: acc.dormshousing + rating.dormshousing,
+        healthsafety: acc.healthsafety + rating.healthsafety,
+        citysetting: acc.citysetting + rating.citysetting,
+      }),
+      {
+        studentlife: 0,
+        classesteachers: 0,
+        cost: 0,
+        returnoninvestment: 0,
+        diningfood: 0,
+        dormshousing: 0,
+        healthsafety: 0,
+        citysetting: 0,
+      }
+    );
+
+    const count = ratings.length;
+    return Object.keys(sums).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: Number((sums[key] / count).toFixed(1)),
+      }),
+      {}
+    );
   };
 
   if (!university) {
