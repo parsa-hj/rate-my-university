@@ -17,14 +17,14 @@ BEGIN
         INSERT INTO category (universityid, avgstudentlife, avgclassesteachers, avgcost, avgreturnoninvestment, avgdiningfood, avgdormshousing, avghealthsafety, avgcitysetting)
         VALUES (
             target_university_id,
-            (SELECT AVG(studentlife) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(classesteachers) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(cost) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(returnoninvestment) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(diningfood) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(dormshousing) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(healthsafety) FROM rating WHERE universityid = target_university_id),
-            (SELECT AVG(citysetting) FROM rating WHERE universityid = target_university_id)
+            COALESCE((SELECT AVG(studentlife) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(classesteachers) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(cost) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(returnoninvestment) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(diningfood) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(dormshousing) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(healthsafety) FROM rating WHERE universityid = target_university_id), 0),
+            COALESCE((SELECT AVG(citysetting) FROM rating WHERE universityid = target_university_id), 0)
         )
         ON CONFLICT (universityid) DO UPDATE
         SET

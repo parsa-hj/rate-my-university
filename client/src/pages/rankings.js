@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar";
@@ -7,9 +7,11 @@ import { Star, MapPin, Building2 } from "lucide-react";
 import { getUniversities, getUniversityAverages } from "../lib/api";
 import { useSupabaseQuery } from "../hooks/useSupabaseQuery";
 import ErrorMessage from "../components/ErrorMessage";
+import { supabase } from "../lib/supabaseClient";
 
 function Rankings() {
   const [selectedCategory, setSelectedCategory] = useState("StudentLife");
+  const [scores, setScores] = useState([]);
 
   // Fetch universities
   const {
@@ -18,36 +20,67 @@ function Rankings() {
     error: universitiesError,
   } = useSupabaseQuery(() => getUniversities());
 
-  // Fetch averages for all universities
-  const {
-    data: scores,
-    loading: scoresLoading,
-    error: scoresError,
-  } = useSupabaseQuery(async () => {
-    if (!universities) return [];
-    const averagesPromises = universities.map(async (university) => {
-      try {
-        const averages = await getUniversityAverages(university.universityid);
-        return {
-          universityid: university.universityid,
-          avgstudentlife: averages?.avgstudentlife || 0,
-          avgclassesteachers: averages?.avgclassesteachers || 0,
-          avgcost: averages?.avgcost || 0,
-          avgreturnoninvestment: averages?.avgreturnoninvestment || 0,
-          avgdiningfood: averages?.avgdiningfood || 0,
-          avgdormshousing: averages?.avgdormshousing || 0,
-          avghealthsafety: averages?.avghealthsafety || 0,
-          avgcitysetting: averages?.avgcitysetting || 0,
-        };
-      } catch (error) {
-        console.error(
-          `Error fetching averages for university ${university.universityid}:`,
-          error
-        );
-        return null;
-      }
-    });
-    return (await Promise.all(averagesPromises)).filter(Boolean);
+  // Replace the useSupabaseQuery for scores with useEffect
+  useEffect(() => {
+    const fetchScores = async () => {
+      if (!universities) return;
+
+      const averagesPromises = universities.map(async (university) => {
+        try {
+          const averages = await getUniversityAverages(university.universityid);
+          return {
+            universityid: university.universityid,
+            avgstudentlife: averages?.avgstudentlife || 0,
+            avgclassesteachers: averages?.avgclassesteachers || 0,
+            avgcost: averages?.avgcost || 0,
+            avgreturnoninvestment: averages?.avgreturnoninvestment || 0,
+            avgdiningfood: averages?.avgdiningfood || 0,
+            avgdormshousing: averages?.avgdormshousing || 0,
+            avghealthsafety: averages?.avghealthsafety || 0,
+            avgcitysetting: averages?.avgcitysetting || 0,
+          };
+        } catch (error) {
+          console.error(
+            `Error fetching averages for university ${university.universityid}:`,
+            error
+          );
+          return null;
+        }
+      });
+      const newScores = await Promise.all(averagesPromises);
+      setScores(newScores.filter(Boolean));
+    };
+
+    fetchScores();
+  }, [universities]);
+
+  // Real-time subscription effect
+  useEffect(() => {
+    const subscription = supabase
+      .channel("rating_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rating",
+        },
+        async () => {
+          if (universities) {
+            const newScores = await Promise.all(
+              universities.map((university) =>
+                getUniversityAverages(university.universityid)
+              )
+            );
+            setScores(newScores.filter(Boolean));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [universities]);
 
   // Combine universities with scores
@@ -78,7 +111,7 @@ function Rankings() {
   };
 
   // Handle loading state
-  if (universitiesLoading || scoresLoading) {
+  if (universitiesLoading || !scores.length) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -94,13 +127,13 @@ function Rankings() {
   }
 
   // Handle error state
-  if (universitiesError || scoresError) {
+  if (universitiesError) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <ErrorMessage
-            message={universitiesError || scoresError}
+            message={universitiesError}
             onRetry={() => window.location.reload()}
           />
         </div>

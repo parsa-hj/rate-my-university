@@ -46,13 +46,45 @@ export const getStudentRatings = async (studentId) => {
 };
 
 export const createRating = async (ratingData) => {
+  // Destructure to ensure we're only sending the required fields
+  const {
+    universityid,
+    studentid,
+    ratingcomment,
+    studentlife,
+    classesteachers,
+    cost,
+    returnoninvestment,
+    diningfood,
+    dormshousing,
+    healthsafety,
+    citysetting,
+  } = ratingData;
+
+  const dataToSubmit = {
+    universityid,
+    studentid,
+    ratingcomment,
+    studentlife,
+    classesteachers,
+    cost,
+    returnoninvestment,
+    diningfood,
+    dormshousing,
+    healthsafety,
+    citysetting,
+  };
+
   const { data, error } = await supabase
     .from("rating")
-    .insert([ratingData])
+    .insert([dataToSubmit])
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("Supabase error:", error);
+    throw new Error(error.message || "Failed to create rating");
+  }
   return data;
 };
 

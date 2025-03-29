@@ -45,9 +45,9 @@ function Rating() {
     }
 
     const ratingData = {
-      universityid: id,
+      universityid: parseInt(id),
       studentid: 2778866,
-      ratingcomment: userComment,
+      ratingcomment: userComment.trim(),
       studentlife: studentLifeScore,
       classesteachers: classesTeachersScore,
       cost: costScore,
@@ -67,7 +67,7 @@ function Rating() {
       navigate(`/client-universities`);
     } catch (error) {
       console.error("Failed to submit rating:", error);
-      alert("Failed to submit rating: " + error.message);
+      alert(error.message || "Failed to submit rating. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,6 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import CommentsSection from "../components/CommentsSection";
-import RatingsDisplay from "../components/RatingsDisplay";
 import { MapPin, Building2, GraduationCap, Star } from "lucide-react";
 import {
   getUniversityById,
@@ -13,6 +12,7 @@ import {
   deleteRating,
   updateRating,
 } from "../lib/api";
+import { supabase } from "../lib/supabaseClient";
 
 function University() {
   const { id } = useParams();
@@ -65,6 +65,31 @@ function University() {
     };
 
     fetchFacilities();
+  }, [id]);
+
+  useEffect(() => {
+    // Subscribe to changes in the rating table
+    const subscription = supabase
+      .channel("rating_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rating",
+          filter: `universityid=eq.${id}`,
+        },
+        async (payload) => {
+          // Refresh ratings when changes occur
+          const data = await getRatings(id);
+          setRatings(data);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [id]);
 
   // Function to calculate average ratings
