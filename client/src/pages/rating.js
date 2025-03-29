@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Stars from "../components/starts";
 import { Star, ArrowLeft } from "lucide-react";
 import { getUniversityById, createRating } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 function Rating() {
+  const { user } = useAuth();
   const { id } = useParams();
   const [university, setUniversity] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [existingReview, setExistingReview] = useState(null);
 
   // Define state variables for ratings and comment
   const [studentLifeScore, setStudentLifeScore] = useState(0);
@@ -37,16 +41,65 @@ function Rating() {
     fetchUniversity();
   }, [id]);
 
+  useEffect(() => {
+    const checkExistingReview = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("rating")
+          .select("*")
+          .eq("universityid", parseInt(id))
+          .eq("studentid", user.id)
+          .single();
+
+        if (error && error.code !== "PGRST116") {
+          // ignore not found error
+          console.error("Error checking existing review:", error);
+          return;
+        }
+
+        if (data) {
+          setExistingReview(data);
+        }
+      } catch (error) {
+        console.error("Error in checkExistingReview:", error);
+      }
+    };
+
+    if (user) {
+      checkExistingReview();
+    }
+  }, [id, user]);
+
   // Submit the rating data to Supabase
   const handleSubmitRating = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     if (!userComment || userComment.trim() === "") {
       alert("Please enter a comment.");
       return;
     }
 
+    // Check if all ratings are provided
+    if (
+      !studentLifeScore ||
+      !classesTeachersScore ||
+      !costScore ||
+      !roiScore ||
+      !diningFoodScore ||
+      !dormsHousingScore ||
+      !healthSafetyScore ||
+      !citySettingScore
+    ) {
+      alert("Please provide ratings for all categories.");
+      return;
+    }
+
     const ratingData = {
       universityid: parseInt(id),
-      studentid: 2778866,
+      studentid: user.id,
       ratingcomment: userComment.trim(),
       studentlife: studentLifeScore,
       classesteachers: classesTeachersScore,
@@ -67,7 +120,9 @@ function Rating() {
       navigate(`/client-universities`);
     } catch (error) {
       console.error("Failed to submit rating:", error);
-      alert(error.message || "Failed to submit rating. Please try again.");
+      alert(
+        "Failed to submit rating. Please make sure all fields are filled correctly and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -85,6 +140,23 @@ function Rating() {
     setCitySettingScore(0);
     setUserComment("");
   };
+
+  if (existingReview) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">
+          You have already reviewed this university. You can edit your review
+          from your account page.
+        </p>
+        <Link
+          to="/client-account?tab=ratings"
+          className="text-blue-600 hover:underline"
+        >
+          Go to my reviews
+        </Link>
+      </div>
+    );
+  }
 
   if (!university) {
     return (

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import app_logo from "../assets/images/rmu-logo.png";
 import { User, Settings, Star, LogOut } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 const navigation = [
   { name: "Home", href: "/", current: false },
@@ -17,10 +19,21 @@ function classNames(...classes) {
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleAccountNavigation = (tab) => {
     setIsDropdownOpen(false);
     navigate(`/client-account?tab=${tab}`);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
@@ -37,6 +50,7 @@ export default function Navbar() {
         </div>
 
         <nav className="hidden md:flex items-center space-x-6">
+          {/* Main Navigation - Always visible */}
           {navigation.map((item) => (
             <Link
               key={item.name}
@@ -52,91 +66,138 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <div className="relative">
-            <button
-              className="rounded-full h-10 w-10 bg-blue-50 flex items-center justify-center"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <User className="h-5 w-5 text-blue-600" />
-            </button>
+          {/* Auth Buttons or Profile Dropdown */}
+          {user ? (
+            // Logged in - Show profile dropdown
+            <div className="relative">
+              <button
+                className="rounded-full h-10 w-10 bg-blue-50 flex items-center justify-center"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <User className="h-5 w-5 text-blue-600" />
+              </button>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
-                <button
-                  onClick={() => handleAccountNavigation("profile")}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </button>
-                <button
-                  onClick={() => handleAccountNavigation("settings")}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </button>
-                <button
-                  onClick={() => handleAccountNavigation("ratings")}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  <Star className="mr-2 h-4 w-4" />
-                  <span>My Ratings</span>
-                </button>
-                <div className="border-t border-gray-100 my-1"></div>
-                <button
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
-                    /* Add logout logic */
-                  }}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </button>
-              </div>
-            )}
-          </div>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50">
+                  <button
+                    onClick={() => handleAccountNavigation("profile")}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </button>
+                  <button
+                    onClick={() => handleAccountNavigation("settings")}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </button>
+                  <button
+                    onClick={() => handleAccountNavigation("ratings")}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    <span>My Ratings</span>
+                  </button>
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <button
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Not logged in - Show auth buttons
+            <div className="flex items-center space-x-3">
+              <Link
+                to="/login"
+                className="text-blue-600 hover:text-blue-700 px-4 py-2 rounded-full font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-full font-medium transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </nav>
 
-        {/* Mobile menu button */}
+        {/* Mobile menu */}
         <div className="md:hidden">
-          <button
-            className="rounded-full h-10 w-10 bg-blue-50 flex items-center justify-center"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <User className="h-5 w-5 text-blue-600" />
-          </button>
+          {user ? (
+            // Logged in - Show mobile profile menu
+            <div className="relative">
+              <button
+                className="rounded-full h-10 w-10 bg-blue-50 flex items-center justify-center"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <User className="h-5 w-5 text-blue-600" />
+              </button>
 
-          {isDropdownOpen && (
-            <div className="absolute right-4 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <div className="border-t border-gray-100"></div>
-              <button
-                onClick={() => handleAccountNavigation("profile")}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  {navigation.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                  <div className="border-t border-gray-100"></div>
+                  <button
+                    onClick={() => handleAccountNavigation("profile")}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => handleAccountNavigation("settings")}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => handleAccountNavigation("ratings")}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    My Ratings
+                  </button>
+                  <div className="border-t border-gray-100"></div>
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Not logged in - Show mobile auth buttons
+            <div className="flex items-center space-x-2">
+              <Link
+                to="/login"
+                className="text-blue-600 hover:text-blue-700 px-3 py-2 text-sm font-medium"
               >
-                Profile
-              </button>
-              <button
-                onClick={() => handleAccountNavigation("settings")}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-full text-sm font-medium"
               >
-                Settings
-              </button>
-              <button
-                onClick={() => handleAccountNavigation("ratings")}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                My Ratings
-              </button>
+                Sign Up
+              </Link>
             </div>
           )}
         </div>

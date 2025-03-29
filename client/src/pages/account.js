@@ -1,10 +1,13 @@
 import Navbar from "../components/navbar";
 import React, { useState, useEffect } from "react";
 import { User, Settings, Star } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { getStudents, getStudentRatings, getUniversities } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 function Account() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     searchParams.get("tab") || "profile"
@@ -12,15 +15,25 @@ function Account() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   const fetchData = async () => {
     try {
-      const students = await getStudents();
-      if (students && students.length > 0) {
-        setData(students[0]);
+      const { data: userData, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
       }
+
+      setData(userData);
     } catch (error) {
       console.error("Error fetching data:", error.message);
     }
@@ -122,9 +135,11 @@ const ProfileContent = ({ data }) => {
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <span className="block text-sm font-medium text-gray-600 mb-1">
-            Age
+            Date of Birth
           </span>
-          <span className="text-lg text-gray-900">{data.age}</span>
+          <span className="text-lg text-gray-900">
+            {new Date(data.date_of_birth).toLocaleDateString()}
+          </span>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <span className="block text-sm font-medium text-gray-600 mb-1">
@@ -136,7 +151,9 @@ const ProfileContent = ({ data }) => {
           <span className="block text-sm font-medium text-gray-600 mb-1">
             Major
           </span>
-          <span className="text-lg text-gray-900">{data.major}</span>
+          <span className="text-lg text-gray-900">
+            {data.major || "Not specified"}
+          </span>
         </div>
         <div className="bg-gray-50 p-4 rounded-lg">
           <span className="block text-sm font-medium text-gray-600 mb-1">
@@ -170,25 +187,55 @@ const SettingsContent = ({ data }) => (
 );
 
 const RatingsContent = () => {
+  const { user } = useAuth();
   const [ratings, setRatings] = useState([]);
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingRating, setEditingRating] = useState(null);
+  const [editComment, setEditComment] = useState("");
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  const fetchUserRatings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("rating")
+        .select(
+          `
+          *,
+          universities:universityid (name)
+        `
+        )
+        .eq("studentid", user.id);
+
+      if (error) {
+        console.error("Error fetching ratings:", error);
+        return [];
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Error in fetchUserRatings:", error);
+      return [];
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const [ratingsData, universitiesData] = await Promise.all([
-        getStudentRatings(2778866),
+        fetchUserRatings(),
         getUniversities(),
       ]);
-      setRatings(ratingsData);
-      setUniversities(universitiesData);
+      setRatings(ratingsData || []);
+      setUniversities(universitiesData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setRatings([]);
+      setUniversities([]);
     } finally {
       setLoading(false);
     }
@@ -199,6 +246,65 @@ const RatingsContent = () => {
       (uni) => uni.universityid === universityId
     );
     return university ? university.name : "Unknown University";
+  };
+
+  const handleEditClick = (rating) => {
+    setEditingRating(rating);
+    setEditComment(rating.ratingcomment);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRating(null);
+    setEditComment("");
+  };
+
+  const handleSaveEdit = async (ratingId) => {
+    try {
+      const { data, error } = await supabase
+        .from("rating")
+        .update({ ratingcomment: editComment })
+        .eq("ratingid", ratingId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update the ratings list with the edited comment
+      setRatings(
+        ratings.map((r) =>
+          r.ratingid === ratingId ? { ...r, ratingcomment: editComment } : r
+        )
+      );
+
+      setEditingRating(null);
+      setEditComment("");
+      alert("Review updated successfully!");
+    } catch (error) {
+      console.error("Error updating review:", error);
+      alert("Failed to update review. Please try again.");
+    }
+  };
+
+  const handleDeleteRating = async (ratingId) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("rating")
+        .delete()
+        .eq("ratingid", ratingId);
+
+      if (error) throw error;
+
+      // Remove the deleted rating from the list
+      setRatings(ratings.filter((r) => r.ratingid !== ratingId));
+      alert("Review deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      alert("Failed to delete review. Please try again.");
+    }
   };
 
   if (loading) {
@@ -227,6 +333,39 @@ const RatingsContent = () => {
                   <p className="text-sm text-gray-500">
                     {new Date(rating.ratingdate).toLocaleDateString()}
                   </p>
+                </div>
+                <div className="flex gap-2">
+                  {editingRating?.ratingid === rating.ratingid ? (
+                    <>
+                      <button
+                        onClick={() => handleSaveEdit(rating.ratingid)}
+                        className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleEditClick(rating)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRating(rating.ratingid)}
+                        className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -301,15 +440,44 @@ const RatingsContent = () => {
                 <h4 className="text-sm font-medium text-gray-600 mb-2">
                   Review
                 </h4>
-                <p className="text-gray-900">{rating.ratingcomment}</p>
+                {editingRating?.ratingid === rating.ratingid ? (
+                  <textarea
+                    value={editComment}
+                    onChange={(e) => setEditComment(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none h-32"
+                    maxLength="250"
+                  />
+                ) : (
+                  <p className="text-gray-900">{rating.ratingcomment}</p>
+                )}
+                {editingRating?.ratingid === rating.ratingid && (
+                  <div className="flex justify-end mt-2">
+                    <span className="text-sm text-gray-500">
+                      {editComment.length}/250 characters
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8">
-          <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No ratings available yet.</p>
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <Star className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            No Reviews Yet
+          </h3>
+          <p className="text-gray-600 mb-6">
+            You haven't submitted any university reviews yet. Share your
+            experience to help other students make informed decisions!
+          </p>
+          <Link
+            to="/client-universities"
+            className="inline-flex items-center px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+          >
+            <Star className="w-5 h-5 mr-2" />
+            Write Your First Review
+          </Link>
         </div>
       )}
     </div>

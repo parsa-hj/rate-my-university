@@ -46,46 +46,51 @@ export const getStudentRatings = async (studentId) => {
 };
 
 export const createRating = async (ratingData) => {
-  // Destructure to ensure we're only sending the required fields
-  const {
-    universityid,
-    studentid,
-    ratingcomment,
-    studentlife,
-    classesteachers,
-    cost,
-    returnoninvestment,
-    diningfood,
-    dormshousing,
-    healthsafety,
-    citysetting,
-  } = ratingData;
+  try {
+    const {
+      universityid,
+      studentid,
+      ratingcomment,
+      studentlife,
+      classesteachers,
+      cost,
+      returnoninvestment,
+      diningfood,
+      dormshousing,
+      healthsafety,
+      citysetting,
+    } = ratingData;
 
-  const dataToSubmit = {
-    universityid,
-    studentid,
-    ratingcomment,
-    studentlife,
-    classesteachers,
-    cost,
-    returnoninvestment,
-    diningfood,
-    dormshousing,
-    healthsafety,
-    citysetting,
-  };
+    const dataToSubmit = {
+      universityid: parseInt(universityid),
+      studentid,
+      ratingcomment,
+      studentlife,
+      classesteachers,
+      cost,
+      returnoninvestment,
+      diningfood,
+      dormshousing,
+      healthsafety,
+      citysetting,
+      // ratingdate will be set automatically by the database default value
+    };
 
-  const { data, error } = await supabase
-    .from("rating")
-    .insert([dataToSubmit])
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("rating")
+      .insert([dataToSubmit])
+      .select()
+      .single();
 
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error(error.message || "Failed to create rating");
+    if (error) {
+      console.error("Supabase error:", error);
+      throw new Error(error.message || "Failed to create rating");
+    }
+    return data;
+  } catch (error) {
+    console.error("Create rating error:", error);
+    throw error;
   }
-  return data;
 };
 
 export const updateRating = async (ratingId, updatedComment) => {

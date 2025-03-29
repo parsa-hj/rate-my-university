@@ -15,6 +15,7 @@ import {
   updateCategoryAverages,
 } from "../lib/api";
 import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../contexts/AuthContext";
 
 function University() {
   const { id } = useParams();
@@ -33,6 +34,7 @@ function University() {
     healthsafety: 0,
     citysetting: 0,
   });
+  const { user } = useAuth();
 
   // Fetch university data when the component mounts
   useEffect(() => {
@@ -332,13 +334,23 @@ function University() {
 
         {/* Rate Button */}
         <div className="flex justify-center mt-8">
-          <Link
-            to={`/client-rating/${university.universityid}`}
-            className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-          >
-            <Star className="w-5 h-5 mr-2" />
-            Rate this University
-          </Link>
+          {user ? (
+            <Link
+              to={`/client-rating/${university.universityid}`}
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+            >
+              <Star className="w-5 h-5 mr-2" />
+              Rate this University
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+            >
+              <Star className="w-5 h-5 mr-2" />
+              Sign in to Rate
+            </Link>
+          )}
         </div>
       </div>
 

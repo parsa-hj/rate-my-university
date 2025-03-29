@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { TrashIcon, PencilSquareIcon } from "@heroicons/react/20/solid";
 import { Star } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const CommentsSection = ({ ratings, onDelete, onEdit }) => {
+  const { user } = useAuth();
   const [editingComment, setEditingComment] = useState(null);
   const [newComment, setNewComment] = useState("");
 
@@ -52,22 +54,26 @@ const CommentsSection = ({ ratings, onDelete, onEdit }) => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button
-                    onClick={() =>
-                      startEditing(rating.ratingid, rating.ratingcomment)
-                    }
-                    className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
-                    title="Edit review"
-                  >
-                    <PencilSquareIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(rating.ratingid)}
-                    className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
-                    title="Delete review"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
+                  {user && user.id === rating.studentid && (
+                    <button
+                      onClick={() =>
+                        startEditing(rating.ratingid, rating.ratingcomment)
+                      }
+                      className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                      title="Edit review"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button>
+                  )}
+                  {user && user.id === rating.studentid && (
+                    <button
+                      onClick={() => onDelete(rating.ratingid)}
+                      className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50 transition-colors"
+                      title="Delete review"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
 

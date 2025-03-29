@@ -1,8 +1,60 @@
 import app_logo from "../assets/images/rmu-logo.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Calendar, GraduationCap } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 export default function SignUp() {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const formData = new FormData(e.target);
+
+    try {
+      // 1. Sign up with Supabase Auth
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.get("email"),
+        password: formData.get("password"),
+      });
+
+      if (signUpError) throw signUpError;
+      if (!data?.user?.id) throw new Error("No user ID returned from signup");
+
+      // 2. Update the user's profile data
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.get("first-name"),
+          last_name: formData.get("last-name"),
+          date_of_birth: formData.get("date-of-birth"),
+          graduation_year: formData.get("graduation-year"),
+          school: formData.get("school"),
+          major: formData.get("major") || null,
+        })
+        .eq("id", data.user.id);
+
+      if (profileError) {
+        console.error("Profile Error:", profileError);
+        throw profileError;
+      }
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Signup error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -21,7 +73,10 @@ export default function SignUp() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form action="#" method="POST" className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded">{error}</div>
+            )}
             {/* First and Last Name Fields */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -70,30 +125,30 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Age and Graduation Date Fields */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="age"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Age
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Calendar className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    required
-                    autoComplete="age"
-                    className="block w-full pl-10 rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    placeholder="20"
-                  />
+            {/* Date of Birth Field */}
+            <div>
+              <label
+                htmlFor="date-of-birth"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Date of Birth
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Calendar className="h-5 w-5 text-gray-400" />
                 </div>
+                <input
+                  id="date-of-birth"
+                  name="date-of-birth"
+                  type="date"
+                  required
+                  className="block w-full pl-10 rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
               </div>
+            </div>
+
+            {/* Graduation Date Fields */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label
                   htmlFor="graduation-date"
@@ -196,9 +251,10 @@ export default function SignUp() {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50"
               >
-                Create Account
+                {loading ? "Creating account..." : "Create Account"}
               </button>
             </div>
           </form>
