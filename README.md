@@ -62,6 +62,7 @@ The server should now be running on http://localhost:5000.
 - **Access**: Once both are running, access the client interface at [http://localhost:3000](http://localhost:3000), while the server will operate on [http://localhost:5000](http://localhost:5000).
 
 ## Pictures
-![Screenshot-rmp1](https://github.com/user-attachments/assets/c3be5743-8156-4a20-9dca-f73fbd034313)
-![Screenshot-rmp2](https://github.com/user-attachments/assets/82840e25-f71f-4370-83fe-33077c09f620)
-![Screenshot-rmp3](https://github.com/user-attachments/assets/89042a65-7b2f-43d9-a856-e1c5f75f45ed)
+![rmu-gh-1](https://github.com/user-attachments/assets/6ee7247a-3bd7-4a06-9ed7-62b40ce041fa)
+![rmu-gh-2](https://github.com/user-attachments/assets/c2bb125c-fabb-450e-94f8-7b46121c146f)
+![rmu-gh-3](https://github.com/user-attachments/assets/7a185fd0-bcd3-470b-be92-3229f09f2df4)
+
