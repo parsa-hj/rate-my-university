@@ -3,12 +3,13 @@ const mysql = require("mysql2");
 const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
-
+const wafMiddleware = require("./waf");
 const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors());
 app.use(express.json());
+app.use(wafMiddleware);
 
 const port = process.env.PORT || 5000;
 
